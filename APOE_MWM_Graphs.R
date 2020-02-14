@@ -247,7 +247,7 @@ arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
        code = 3, length = 0.05)
 dev.off() #Close pdf file
 
-#Barplot with Standard Error of Distance in Quadrant for All Genotypes-- PROBE TRIAL
+#Barplot with Standard Error of Distance in Quadrant SW for All Genotypes-- PROBE TRIAL
 myMean<-aggregate(dfSW$Distance, by=list(Day=dfSW$Day, Genotype=dfSW$Genotype), mean)
 mySD<-aggregate(dfSW$Distance, by=list(Day=dfSW$Day, Genotype=dfSW$Genotype), sd)
 myMean<-do.call(data.frame, myMean)
@@ -259,7 +259,7 @@ tabbedSE<-tapply(myMean$SE, list(myMean$Day, myMean$Genotype), function(x) c(x=x
 tabbedMeans<-tabbedMeans[6:7,1:3]
 tabbedSE<-tabbedSE[6:7,1:3]
 
-pdf(file='ProbeDistInQuad.pdf')
+pdf(file='ProbeDistInQuadSW.pdf')
 barCenters<-barplot(height=tabbedMeans,
                     density=c(100,5,15,30),
                     angle=c(0,0,45,90),
@@ -267,7 +267,7 @@ barCenters<-barplot(height=tabbedMeans,
                     col='blueviolet',
                     beside=TRUE, las=1,
                     cex.names=0.75,
-                    main="Distance per Quadrant",
+                    main="Distance in Quadrant SW",
                     ylab="Distance (m)",
                     border="black", axes=TRUE,
                     legend.text=TRUE,
