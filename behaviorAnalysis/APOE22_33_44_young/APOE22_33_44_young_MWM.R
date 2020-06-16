@@ -7,8 +7,8 @@ library(magrittr)
 library(dplyr)
 library(ggpubr)
 
-masterFile='/Users/bass/Behavior_Andrei/APOE_MWM/apoe22_33_44_mwm_combined.csv'
-outpath='/Users/bass/Behavior_Andrei/APOE_MWM/R_Graphs/'
+masterFile='/Users/ar_ni/OneDrive/Desktop/APOE_MWM/apoe22_33_44_mwm_combined.csv'
+outpath='/Users/ar_ni/OneDrive/Desktop/APOE_MWM/R_Graphs/'
 
 info<-read.csv(masterFile, header=TRUE)
 df<-data.frame(info)
@@ -108,11 +108,31 @@ ggsave(paste(outpath,'poolTimeAPOE.pdf',sep=''), plot = last_plot(), device='pdf
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
 #__________________________________________________________________
 
+#2. Time to platform over acquisition day for APOE 2/2, 3/3, and 4/4, separated by sex
+ggline(dfAveraged, x='Stage', y='Duration', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1', 'red'), size=1,
+       point.size=1.5, xlab='', ylab='Time to Platform (s)', legend='top',
+       facet.by="Sex"
+)
+ggsave(paste(outpath,'poolTimeAPOESex.pdf',sep=''), plot = last_plot(), device='pdf',
+       scale=1, width=5, height=5, unit=c("in"), dpi=300)
+#__________________________________________________________________
+
 #2. Distance to Platform over acquisition day for APOE 2/2, 3/3, 4/4
 ggline(dfAveraged, x='Stage', y='Distance', color='APOE', fill='APOE',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1', 'red'), size=1,
        point.size=1.5, xlab='', ylab='Distance to Platform (m)', legend='top')
 ggsave(paste(outpath,'poolDistAPOE.pdf',sep=''), plot = last_plot(), device='pdf',
+       scale=1, width=5, height=5, unit=c("in"), dpi=300)
+#__________________________________________________________________
+
+#3. Distance to Platform over acquisition day for APOE 2/2, 3/3, 4/4, separated by sex
+ggline(dfAveraged, x='Stage', y='Distance', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1', 'red'), size=1,
+       point.size=1.5, xlab='', ylab='Distance to Platform (m)', legend='top',
+       facet.by="Sex"
+)
+ggsave(paste(outpath,'poolDistAPOESex.pdf',sep=''), plot = last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
 #__________________________________________________________________
 
@@ -124,11 +144,21 @@ ggsave(paste(outpath,'NormSWDistAPOE.pdf',sep=''), plot = last_plot(), device = 
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
 #___________________________________________________________________
+
 #4. NORMALIZED Time swam in SW quadrant for APOE 2/2, 3/3, and 4/4
 ggline(dfAveraged, x='Stage', y='NormSWTime', color='APOE', fill='APOE',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
        point.size = 1.5, xlab='', ylab='Percent of Time (SW)', legend='top')
 ggsave(paste(outpath,'NormSWTimeAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+#_________________________________________________________________________
+
+#4. Mean speed for APOE 2/2, 3/3, and 4/4
+ggline(dfAveraged, x='Stage', y='Mean.speed', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Mean Speed (m/s)', legend='top')
+ggsave(paste(outpath,'MeanSpeedLineAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
 #_________________________________________________________________________

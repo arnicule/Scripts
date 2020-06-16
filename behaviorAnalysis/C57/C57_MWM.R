@@ -7,8 +7,8 @@ library(magrittr)
 library(dplyr)
 library(ggpubr)
 
-masterFile='/Users/bass/Behavior_Andrei/C57/C57_MWM/mwm_master_organized_MWM.csv'
-outpath='/Users/bass/Behavior_Andrei/C57/C57_MWM/R_Graphs/'
+masterFile='/Users/ar_ni/OneDrive/Desktop/C57_MWM/mwm_master_organized_MWM.csv'
+outpath='/Users/ar_ni/OneDrive/Desktop/C57_MWM/R_Graphs/'
 
 info<-read.csv(masterFile, header=TRUE)
 df<-data.frame(info)
@@ -92,20 +92,50 @@ write.csv(dfQuadp2, file='mwmProbe2C57.csv')
 #START PLOTTING
 #________________________________________________________________________
 
-#1. Time to platform over acquisition day for age young vs. old
-p<-ggline(dfAveraged, x='Day', y='Pool.time', color='age_group', fill='age_group',
+#1. Time to platform for ages young vs. old
+ggline(dfAveraged, x='Day', y='Pool.time', color='age_group', fill='age_group',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
        point.size=1.5, xlab='', ylab='Time to Platform (s)', legend='top',
-       #facet.by="sex" #Uncomment to group x-axis by sex
        )
-ggpar(p,
-      main="Pool Time (C57)",
-      font.main=c(14,"bold")
-      )
 ggsave(paste(outpath,'poolTimeLineC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
 #________________________________________________________________________
+
+#2. Distance to platform for ages young vs. old
+ggline(dfAveraged, x='Day', y='Pool.Distance', color='age_group', fill='age_group',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
+       point.size=1.5, xlab='', ylab='Distance to Platform (m)', legend='top',
+)
+ggsave(paste(outpath,'poolDistC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+#________________________________________________________________________
+
+#2. Distance to platform for ages young vs. old separated by sex
+ggline(dfAveraged, x='Day', y='Pool.Distance', color='age_group', fill='age_group',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
+       point.size=1.5, xlab='', ylab='Distance to Platform (m)', legend='top',
+       facet.by='sex'
+)
+ggsave(paste(outpath,'poolDistC57Sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+#________________________________________________________________________
+
+
+
+#2. Time spend in SW Quadrant for ages young vs. old separated by sex
+ggline(dfAveraged, x='Day', y='SW.Time', color='age_group', fill='age_group',
+          error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
+          point.size=1.5, xlab='', ylab='SW Time (s)', legend='top',
+          facet.by="sex"
+)
+ggsave(paste(outpath,'SWTimeC57Sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+#________________________________________________________________________
+
 #2. NORMALIZED distance swam in SW quadrant for ages young vs old
 ggline(dfAveraged, x='Day', y='NormSWDist', color='age_group', fill='age_group',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
@@ -123,6 +153,15 @@ ggline(dfAveraged, x='Day', y='NormSWTime', color='age_group', fill='age_group',
        #facet.by="sex" #Uncomment to group x-axis by sex
        )
 ggsave(paste(outpath,'NormSWTimeLineC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+#_______________________________________________________________________________
+
+#3. Mean speed for ages young vs old
+ggline(dfAveraged, x='Day', y='Average.Pool.Speed', color='age_group', fill='age_group',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet', 'chartreuse1'), size=1, 
+       point.size = 1.5, xlab='', ylab='Mean Speed (m/s)', legend='top', title='Mean Speed (C57)',
+)
+ggsave(paste(outpath,'MeanSpeedLineC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS
