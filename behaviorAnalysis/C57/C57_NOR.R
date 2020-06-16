@@ -7,8 +7,8 @@ library(magrittr)
 library(dplyr)
 library(reshape2)
 
-masterFile='/Users/bass/Behavior_Andrei/C57/C57_NOR/NOR_analyzed.csv'
-outpath='/Users/bass/Behavior_Andrei/C57/C57_NOR/R_Graphs/'
+masterFile='/Users/ar_ni/OneDrive/Desktop/C57_NOR/NOR_analyzed.csv'
+outpath='/Users/ar_ni/OneDrive/Desktop/C57_NOR/R_Graphs/'
 
 info<-read.csv(masterFile, header=TRUE)
 df<-data.frame(info)

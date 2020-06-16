@@ -29,6 +29,8 @@ dfDay2_Obj2RI<-data.frame(dfDay2$Animal, dfDay2$APOE, dfDay2$Sex, dfDay2$Stage, 
 dfDay2_Obj2RI<-cbind(dfDay2_Obj2RI, Object='Obj2')
 colnames(dfDay2_Obj2RI)<-c('AnimalID', 'Genotype', 'Sex', 'Stage', 'Age', 'Trial', 'RI', 'Object')
 
+dfDay2_Obj2RI_Trial1<-subset(dfDay2_Obj2RI, (Trial=='1'))
+
 dfDay2_Obj2RI_ShortTerm<-subset(dfDay2_Obj2RI, (Trial=='4'))
 
 dfDay3<-subset(dfAll, (Stage=='Day3_Novel Object2'))
@@ -41,7 +43,7 @@ dfDay5_Obj2RI<-data.frame(dfDay5$Animal, dfDay5$APOE, dfDay5$Sex, dfDay5$Stage, 
 dfDay5_Obj2RI<-cbind(dfDay5_Obj2RI, Object='Obj2')
 colnames(dfDay5_Obj2RI)<-c('AnimalID', 'Genotype', 'Sex', 'Stage', 'Age', 'Trial', 'RI', 'Object')
 
-dfFin<-rbind(dfDay2_Obj2RI_ShortTerm, dfDay3_Obj2RI, dfDay5_Obj2RI)
+dfFin<-rbind(dfDay2_Obj2RI_Trial1, dfDay2_Obj2RI_ShortTerm, dfDay3_Obj2RI, dfDay5_Obj2RI)
 
 #START PLOTTING
 #__________________________________________________________________________
@@ -89,7 +91,7 @@ ggerrorplot(dfDay2_Obj2RI, x='Trial', y='RI', color='Age', fill='Age',
 ggsave(paste(outpath, 'Day2Obj2RIBoxNOR.pdf', sep=''), plot=last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
 
-#4. Object 2 RI over Day 2 Short-term Memory, Day 3, and Day 5
+#4. Object 2 RI over Day 2 LP, Day 2 Short-term Memory, Day 3, and Day 5
 ggerrorplot(dfFin, x='Stage', y='RI', color='Age', fill='Age',
             desc_stat='mean_se', palette=c('blueviolet', 'chartreuse1'), size=1,
             error.plot='errorbar', add='mean', point.size=1.5, xlab='Stage', ylab='Object 2 RI',
