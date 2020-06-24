@@ -106,6 +106,25 @@ ggline(dfAveraged, x='Stage', y='Duration', color='APOE', fill='APOE',
        point.size=1.5, xlab='', ylab='Time to Platform (s)', legend='top')
 ggsave(paste(outpath,'poolTimeAPOE.pdf',sep=''), plot = last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+testMethod<-oneway.test(Duration ~ APOE, data = dfAveraged)
+postHoc<-pairwise.t.test(dfAveraged$Duration, dfAveraged$APOE)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=4, ncol=3)
+postHocTable[1,]=c('', '', '')
+postHocTable[2,]=c('Pairwise Comparisons (p-value)', 'APOE2/2', 'APOE3/3')
+postHocTable[3,]=c('APOE3/3', postHoc$p.value[1,1], postHoc$p.value[1,2])
+postHocTable[4,]=c('APOE4/4', postHoc$p.value[2,1], postHoc$p.value[2,2])
+
+myfile<-paste(outpath,'poolTimeAPOEstats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 #__________________________________________________________________
 
 #2. Time to platform over acquisition day for APOE 2/2, 3/3, and 4/4, separated by sex
@@ -116,17 +135,48 @@ ggline(dfAveraged, x='Stage', y='Duration', color='APOE', fill='APOE',
 )
 ggsave(paste(outpath,'poolTimeAPOESex.pdf',sep=''), plot = last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+aov<-aov(Duration ~ APOE + Sex, data = dfAveraged)
+summary(aov)
+
+mytTable<-as_tibble(
+  cbind(aov$data.name, aov$statistic, aov$p.value, aov$parameter[1]) #Get values from summary
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df')
+
+myfile<-paste(outpath,'poolTimeAPOESexstats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #__________________________________________________________________
 
-#2. Distance to Platform over acquisition day for APOE 2/2, 3/3, 4/4
+#3. Distance to Platform over acquisition day for APOE 2/2, 3/3, 4/4
 ggline(dfAveraged, x='Stage', y='Distance', color='APOE', fill='APOE',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1', 'red'), size=1,
        point.size=1.5, xlab='', ylab='Distance to Platform (m)', legend='top')
 ggsave(paste(outpath,'poolDistAPOE.pdf',sep=''), plot = last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+testMethod<-oneway.test(Distance ~ APOE, data = dfAveraged)
+postHoc<-pairwise.t.test(dfAveraged$Distance, dfAveraged$APOE)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=4, ncol=3)
+postHocTable[1,]=c('', '', '')
+postHocTable[2,]=c('Pairwise Comparisons (p-value)', 'APOE2/2', 'APOE3/3')
+postHocTable[3,]=c('APOE3/3', postHoc$p.value[1,1], postHoc$p.value[1,2])
+postHocTable[4,]=c('APOE4/4', postHoc$p.value[2,1], postHoc$p.value[2,2])
+
+myfile<-paste(outpath,'poolDistAPOEstats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 #__________________________________________________________________
 
-#3. Distance to Platform over acquisition day for APOE 2/2, 3/3, 4/4, separated by sex
+#4. Distance to Platform over acquisition day for APOE 2/2, 3/3, 4/4, separated by sex
 ggline(dfAveraged, x='Stage', y='Distance', color='APOE', fill='APOE',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1', 'red'), size=1,
        point.size=1.5, xlab='', ylab='Distance to Platform (m)', legend='top',
@@ -136,41 +186,114 @@ ggsave(paste(outpath,'poolDistAPOESex.pdf',sep=''), plot = last_plot(), device='
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
 #__________________________________________________________________
 
-#3. NORMALIZED distance swam in SW quadrant for APOE 2/2, 3/3, and 4/4
+#5. NORMALIZED distance swam in SW quadrant for APOE 2/2, 3/3, and 4/4
 ggline(dfAveraged, x='Stage', y='NormSWDist', color='APOE', fill='APOE',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
        point.size = 1.5, xlab='', ylab='Percent of Distance (SW)', legend='top')
 ggsave(paste(outpath,'NormSWDistAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+testMethod<-oneway.test(NormSWDist ~ APOE, data = dfAveraged)
+postHoc<-pairwise.t.test(dfAveraged$NormSWDist, dfAveraged$APOE)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=4, ncol=3)
+postHocTable[1,]=c('', '', '')
+postHocTable[2,]=c('Pairwise Comparisons (p-value)', 'APOE2/2', 'APOE3/3')
+postHocTable[3,]=c('APOE3/3', postHoc$p.value[1,1], postHoc$p.value[1,2])
+postHocTable[4,]=c('APOE4/4', postHoc$p.value[2,1], postHoc$p.value[2,2])
+
+myfile<-paste(outpath,'NormSWDistAPOEstats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 #___________________________________________________________________
 
-#4. NORMALIZED Time swam in SW quadrant for APOE 2/2, 3/3, and 4/4
+#6. NORMALIZED Time swam in SW quadrant for APOE 2/2, 3/3, and 4/4
 ggline(dfAveraged, x='Stage', y='NormSWTime', color='APOE', fill='APOE',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
        point.size = 1.5, xlab='', ylab='Percent of Time (SW)', legend='top')
 ggsave(paste(outpath,'NormSWTimeAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+testMethod<-oneway.test(NormSWTime ~ APOE, data = dfAveraged)
+postHoc<-pairwise.t.test(dfAveraged$NormSWTime, dfAveraged$APOE)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=4, ncol=3)
+postHocTable[1,]=c('', '', '')
+postHocTable[2,]=c('Pairwise Comparisons (p-value)', 'APOE2/2', 'APOE3/3')
+postHocTable[3,]=c('APOE3/3', postHoc$p.value[1,1], postHoc$p.value[1,2])
+postHocTable[4,]=c('APOE4/4', postHoc$p.value[2,1], postHoc$p.value[2,2])
+
+myfile<-paste(outpath,'NormSWTimeAPOEstats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 #_________________________________________________________________________
 
-#4. Mean speed for APOE 2/2, 3/3, and 4/4
+#7. Mean speed for APOE 2/2, 3/3, and 4/4
 ggline(dfAveraged, x='Stage', y='Mean.speed', color='APOE', fill='APOE',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
        point.size = 1.5, xlab='', ylab='Mean Speed (m/s)', legend='top')
-ggsave(paste(outpath,'MeanSpeedLineAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
+ggsave(paste(outpath,'MeanSpeedAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+testMethod<-oneway.test(Mean.speed ~ APOE, data = dfAveraged)
+postHoc<-pairwise.t.test(dfAveraged$Mean.speed, dfAveraged$APOE)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=4, ncol=3)
+postHocTable[1,]=c('', '', '')
+postHocTable[2,]=c('Pairwise Comparisons (p-value)', 'APOE2/2', 'APOE3/3')
+postHocTable[3,]=c('APOE3/3', postHoc$p.value[1,1], postHoc$p.value[1,2])
+postHocTable[4,]=c('APOE4/4', postHoc$p.value[2,1], postHoc$p.value[2,2])
+
+myfile<-paste(outpath,'MeanSpeedAPOEstats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 #_________________________________________________________________________
-#5. SW Time swam adjusted for Mean Speed
+#8. SW Time swam adjusted for Mean Speed
 ggline(dfAveraged, x='Stage', y='residuals', color='APOE', fill='APOE',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
        point.size = 1.5, xlab='', ylab='Quadrant Time (SW) - Residuals', legend='top')
 ggsave(paste(outpath,'SWTimeAdjustAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+testMethod<-oneway.test(residuals ~ APOE, data = dfAveraged)
+postHoc<-pairwise.t.test(dfAveraged$residuals, dfAveraged$APOE)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=4, ncol=3)
+postHocTable[1,]=c('', '', '')
+postHocTable[2,]=c('Pairwise Comparisons (p-value)', 'APOE2/2', 'APOE3/3')
+postHocTable[3,]=c('APOE3/3', postHoc$p.value[1,1], postHoc$p.value[1,2])
+postHocTable[4,]=c('APOE4/4', postHoc$p.value[2,1], postHoc$p.value[2,2])
+
+myfile<-paste(outpath,'SWTimeAdjustAPOEstats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS
-#6. Barplot with Standard Error of DISTANCE in Quadrant for Genotype 2/2-- PROBE TRIAL
+#9. Barplot with Standard Error of DISTANCE in Quadrant for Genotype 2/2-- PROBE TRIAL
 myMean<-aggregate(dfQuad2$Distance, by=list(Day=dfQuad2$Day, Quadrant=dfQuad2$Quadrant), mean)
 mySD<-aggregate(dfQuad2$Distance, by=list(Day=dfQuad2$Day, Quadrant=dfQuad2$Quadrant), sd)
 myMean<-do.call(data.frame, myMean)

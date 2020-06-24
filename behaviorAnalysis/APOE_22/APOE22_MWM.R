@@ -98,44 +98,97 @@ write.csv(dfQuadp2, file='mwmProbeTrial2APOE.csv')
 #START PLOTTING
 #__________________________________________________________________________
 
-#1. Time to platform over acquisition day for APOE 2/2, 3/3, and 4/4
+#1. Time to platform over acquisition day for APOE 2/2, young vs old
 ggline(dfAveraged, x='Stage', y='Time', color='Age', fill='Age',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
        point.size=1.5, xlab='', ylab='Mean Speed', legend='top')
-ggsave(paste(outpath,'poolTimeAPOE.pdf',sep=''), plot = last_plot(), device='pdf',
+ggsave(paste(outpath,'poolTimeAPOE22.pdf',sep=''), plot = last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+testMethod<-t.test(Duration ~ Age, data = dfAveraged)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'poolTimeAPOE22stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #__________________________________________________________________
 
-#2. Distance to Platform over acquisition day for APOE 2/2, 3/3, 4/4
+#2. Distance to Platform over acquisition day for APOE 2/2, young vs old
 ggline(dfAveraged, x='Stage', y='Distance', color='Age', fill='Age',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
        point.size=1.5, xlab='', ylab='Distance to Platform (m)', legend='top')
 ggsave(paste(outpath,'poolDistAPOE.pdf',sep=''), plot = last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+testMethod<-t.test(Distance ~ Age, data = dfAveraged)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistAPOE22stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #__________________________________________________________________
 
-#3. NORMALIZED distance swam in SW quadrant for APOE 2/2, 3/3, and 4/4
+#3. NORMALIZED distance swam in SW quadrant for APOE 2/2, young vs old
 ggline(dfAveraged, x='Stage', y='NormSWDist', color='Age', fill='Age',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1'), size=1, 
        point.size = 1.5, xlab='', ylab='Percent of Distance (SW)', legend='top')
 ggsave(paste(outpath,'NormSWDistAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+testMethod<-t.test(NormSWDist ~ Age, data = dfAveraged)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'NormSWDistAPOE22stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #___________________________________________________________________
-#4. NORMALIZED Time swam in SW quadrant for APOE 2/2, 3/3, and 4/4
+#4. NORMALIZED Time swam in SW quadrant for APOE 2/2, young vs old
 ggline(dfAveraged, x='Stage', y='NormSWTime', color='Age', fill='Age',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1'), size=1, 
        point.size = 1.5, xlab='', ylab='Percent of Time (SW)', legend='top')
 ggsave(paste(outpath,'NormSWTimeAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+testMethod<-t.test(NormSWTime ~ Age, data = dfAveraged)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'NormSWTimeAPOE22stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #_________________________________________________________________________
-#5. SW Time swam adjusted for Mean Speed
+#5. SW Time swam adjusted for Mean Speed in APOE2/2, young vs old
 ggline(dfAveraged, x='Stage', y='residuals', color='Age', fill='Age',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1'), size=1, 
        point.size = 1.5, xlab='', ylab='Quadrant Time (SW) - Residuals', legend='top')
 ggsave(paste(outpath,'SWTimeAdjustAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+testMethod<-t.test(residuals ~ Age, data = dfAveraged)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'SWTimeAdjustAPOE22stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS
 #6. Barplot with Standard Error of DISTANCE in Quadrant for Genotype 2/2-- PROBE TRIAL

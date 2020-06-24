@@ -97,9 +97,19 @@ ggline(dfAveraged, x='Day', y='Pool.time', color='age_group', fill='age_group',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
        point.size=1.5, xlab='', ylab='Time to Platform (s)', legend='top',
        )
-ggsave(paste(outpath,'poolTimeLineC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
+ggsave(paste(outpath,'poolTimeC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+testMethod<-t.test(Pool.time ~ age_group, data = dfAveraged)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'poolTimeC57stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #________________________________________________________________________
 
 #2. Distance to platform for ages young vs. old
@@ -110,9 +120,19 @@ ggline(dfAveraged, x='Day', y='Pool.Distance', color='age_group', fill='age_grou
 ggsave(paste(outpath,'poolDistC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+testMethod<-t.test(Pool.Distance ~ age_group, data = dfAveraged)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistC57stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #________________________________________________________________________
 
-#2. Distance to platform for ages young vs. old separated by sex
+#3. Distance to platform for ages young vs. old separated by sex
 ggline(dfAveraged, x='Day', y='Pool.Distance', color='age_group', fill='age_group',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
        point.size=1.5, xlab='', ylab='Distance to Platform (m)', legend='top',
@@ -125,7 +145,7 @@ ggsave(paste(outpath,'poolDistC57Sex.pdf',sep=''), plot = last_plot(), device = 
 
 
 
-#2. Time spend in SW Quadrant for ages young vs. old separated by sex
+#4. Time spend in SW Quadrant for ages young vs. old separated by sex
 ggline(dfAveraged, x='Day', y='SW.Time', color='age_group', fill='age_group',
           error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
           point.size=1.5, xlab='', ylab='SW Time (s)', legend='top',
@@ -136,36 +156,68 @@ ggsave(paste(outpath,'SWTimeC57Sex.pdf',sep=''), plot = last_plot(), device = 'p
 
 #________________________________________________________________________
 
-#2. NORMALIZED distance swam in SW quadrant for ages young vs old
+#5. NORMALIZED distance swam in SW quadrant for ages young vs old
 ggline(dfAveraged, x='Day', y='NormSWDist', color='age_group', fill='age_group',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
        point.size=1.5, xlab='', ylab='Percent of Distance', legend='top', title='Normalized SW Distance (C57)',
        #facet.by="sex" #Uncomment to group x-axis by sex
        )
-ggsave(paste(outpath,'NormSWDistLineC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
+ggsave(paste(outpath,'NormSWDistC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+testMethod<-t.test(NormSWDist ~ age_group, data = dfAveraged)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'NormSWDistC57stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #__________________________________________________
-#3. NORMALIZED Time swam in SW quadrant for ages young vs old
+#6. NORMALIZED Time swam in SW quadrant for ages young vs old
 ggline(dfAveraged, x='Day', y='NormSWTime', color='age_group', fill='age_group',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet', 'chartreuse1'), size=1, 
        point.size = 1.5, xlab='', ylab='Percent of Time', legend='top', title='Normalized SW Time (C57)',
        #facet.by="sex" #Uncomment to group x-axis by sex
        )
-ggsave(paste(outpath,'NormSWTimeLineC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
+ggsave(paste(outpath,'NormSWTimeC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+testMethod<-t.test(NormSWTime ~ age_group, data = dfAveraged)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'NormSWTimeC57stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #_______________________________________________________________________________
 
-#3. Mean speed for ages young vs old
+#7. Mean speed for ages young vs old
 ggline(dfAveraged, x='Day', y='Average.Pool.Speed', color='age_group', fill='age_group',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet', 'chartreuse1'), size=1, 
        point.size = 1.5, xlab='', ylab='Mean Speed (m/s)', legend='top', title='Mean Speed (C57)',
 )
-ggsave(paste(outpath,'MeanSpeedLineC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
+ggsave(paste(outpath,'MeanSpeedC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+testMethod<-t.test(Average.Pool.Speed ~ age_group, data = dfAveraged)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'MeanSpeedC57stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS
-#4. Barplot with Standard Error of DISTANCE in Quadrant for Young mice-- Probe Trial 
+#8. Barplot with Standard Error of DISTANCE in Quadrant for Young mice-- Probe Trial 
 myMean<-aggregate(dfQuady$Distance, by=list(Day=dfQuady$Day, Quadrant=dfQuady$Quadrant), mean)
 mySD<-aggregate(dfQuady$Distance, by=list(Day=dfQuady$Day, Quadrant=dfQuady$Quadrant), sd)
 myMean<-do.call(data.frame, myMean)
