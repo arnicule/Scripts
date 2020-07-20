@@ -82,6 +82,12 @@ dfQuado<-na.omit(dfQuado)
 dfQuadp1<-subset(dfQuad, Day=='ProbeTrial1')
 dfQuadp2<-subset(dfQuad, Day=='ProbeTrial2')
 
+#Adjust SW Time for covariate Mean Speed
+cor.test(dfAveraged$SW.Time, dfAveraged$Average.Pool.Speed)
+lm1<-lm(SW.Time ~ Average.Pool.Speed, data=dfAveraged, na.action=NULL)
+cor.test(lm1$residuals, dfAveraged$Average.Pool.Speed)
+dfAveraged<-cbind(dfAveraged, residuals=lm1$residuals)
+
 #__________________________________________________________________________
 #Rewrite Data frame for Stats
 write.csv(dfAveraged, file='mwmStatsAvgC57.csv')
@@ -103,12 +109,27 @@ ggsave(paste(outpath,'poolTimeC57.pdf',sep=''), plot = last_plot(), device = 'pd
 testMethod<-t.test(Pool.time ~ age_group, data = dfAveraged)
 
 mytTable<-as_tibble(
-  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
 )
 
-mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
 
 myfile<-paste(outpath,'poolTimeC57stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+temp <- subset(dfAveraged, Day %in% "Day1")
+
+testMethod<-t.test(Pool.time ~ age_group, data = temp)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(temp))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'poolTimeC57Day1stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #________________________________________________________________________
 
@@ -123,12 +144,27 @@ ggsave(paste(outpath,'poolDistC57.pdf',sep=''), plot = last_plot(), device = 'pd
 testMethod<-t.test(Pool.Distance ~ age_group, data = dfAveraged)
 
 mytTable<-as_tibble(
-  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
 )
 
-mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
 
 myfile<-paste(outpath,'poolDistC57stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+temp <- subset(dfAveraged, Day %in% "Day1")
+
+testMethod<-t.test(Pool.Distance ~ age_group, data = temp)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(temp))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistC57Day1stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #________________________________________________________________________
 
@@ -141,10 +177,89 @@ ggline(dfAveraged, x='Day', y='Pool.Distance', color='age_group', fill='age_grou
 ggsave(paste(outpath,'poolDistC57Sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+tempF <- subset(dfAveraged, sex %in% "F")
+tempM <- subset(dfAveraged, sex %in% "M")
+
+testMethodF<-t.test(Pool.Distance ~ age_group, data = tempF)
+testMethodM<-t.test(Pool.Distance ~ age_group, data = tempM)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$estimate[1], testMethodF$estimate[2], testMethodF$statistic, testMethodF$p.value,  
+        testMethodF$conf.int[1], testMethodF$conf.int[2] , testMethodF$parameter, nrow(tempF))
+)
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$estimate[1], testMethodM$estimate[2], testMethodM$statistic, testMethodM$p.value,  
+        testMethodM$conf.int[1], testMethodM$conf.int[2] , testMethodM$parameter, nrow(tempM))
+)
+
+mycolnames<-c('contrast', names(testMethodF$estimate)[1], names(testMethodF$estimate)[2], names(testMethodF$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistC57Sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+
+temp <- subset(dfAveraged, Day %in% "Day1")
+temp <- subset(temp, sex %in% "F")
+
+testMethod<-t.test(Pool.Distance ~ age_group, data = temp)
+
+mytTable<-as_tibble(
+  cbind(paste("Female", testMethod$data.name, sep=" "), testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(temp))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistC57Day1Femalestats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
 #________________________________________________________________________
+#4. Time spend in Pool for ages young vs. old separated by sex
+ggline(dfAveraged, x='Day', y='Pool.time', color='age_group', fill='age_group',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
+       point.size=1.5, xlab='', ylab='Time to Platform (s)', legend='top',
+       facet.by="sex"
+)
+ggsave(paste(outpath,'PoolTimeC57Sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+tempF <- subset(dfAveraged, sex %in% "F")
+tempM <- subset(dfAveraged, sex %in% "M")
 
+testMethodF<-t.test(Pool.time ~ age_group, data = tempF)
+testMethodM<-t.test(Pool.time ~ age_group, data = tempM)
 
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$estimate[1], testMethodF$estimate[2], testMethodF$statistic, testMethodF$p.value,  
+        testMethodF$conf.int[1], testMethodF$conf.int[2] , testMethodF$parameter, nrow(tempF))
+)
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$estimate[1], testMethodM$estimate[2], testMethodM$statistic, testMethodM$p.value,  
+        testMethodM$conf.int[1], testMethodM$conf.int[2] , testMethodM$parameter, nrow(tempM))
+)
+
+mycolnames<-c('contrast', names(testMethodF$estimate)[1], names(testMethodF$estimate)[2], names(testMethodF$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'poolTimeC57Sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+
+temp <- subset(dfAveraged, sex %in% "F")
+temp <- subset(dfAveraged, Day %in% "Day1")
+
+testMethod<-t.test(Pool.time ~ age_group, data = temp)
+
+mytTable<-as_tibble(
+  cbind(paste("Female", testMethod$data.name, sep=" "), testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(temp))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'poolTimeC57Day1Femalestats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+#________________________________________________________________________
 #4. Time spend in SW Quadrant for ages young vs. old separated by sex
 ggline(dfAveraged, x='Day', y='SW.Time', color='age_group', fill='age_group',
           error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
@@ -154,6 +269,26 @@ ggline(dfAveraged, x='Day', y='SW.Time', color='age_group', fill='age_group',
 ggsave(paste(outpath,'SWTimeC57Sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+tempF <- subset(dfAveraged, sex %in% "F")
+tempM <- subset(dfAveraged, sex %in% "M")
+
+testMethodF<-t.test(SW.Time ~ age_group, data = tempF)
+testMethodM<-t.test(SW.Time ~ age_group, data = tempM)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$estimate[1], testMethodF$estimate[2], testMethodF$statistic, testMethodF$p.value,  
+        testMethodF$conf.int[1], testMethodF$conf.int[2] , testMethodF$parameter, nrow(tempF))
+)
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$estimate[1], testMethodM$estimate[2], testMethodM$statistic, testMethodM$p.value,  
+        testMethodM$conf.int[1], testMethodM$conf.int[2] , testMethodM$parameter, nrow(tempM))
+)
+
+mycolnames<-c('contrast', names(testMethodF$estimate)[1], names(testMethodF$estimate)[2], names(testMethodF$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'SWTimeC57Sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
 #________________________________________________________________________
 
 #5. NORMALIZED distance swam in SW quadrant for ages young vs old
@@ -168,10 +303,11 @@ ggsave(paste(outpath,'NormSWDistC57.pdf',sep=''), plot = last_plot(), device = '
 testMethod<-t.test(NormSWDist ~ age_group, data = dfAveraged)
 
 mytTable<-as_tibble(
-  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
 )
 
-mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
 
 myfile<-paste(outpath,'NormSWDistC57stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
@@ -188,10 +324,11 @@ ggsave(paste(outpath,'NormSWTimeC57.pdf',sep=''), plot = last_plot(), device = '
 testMethod<-t.test(NormSWTime ~ age_group, data = dfAveraged)
 
 mytTable<-as_tibble(
-  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
 )
 
-mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
 
 myfile<-paste(outpath,'NormSWTimeC57stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
@@ -208,12 +345,27 @@ ggsave(paste(outpath,'MeanSpeedC57.pdf',sep=''), plot = last_plot(), device = 'p
 testMethod<-t.test(Average.Pool.Speed ~ age_group, data = dfAveraged)
 
 mytTable<-as_tibble(
-  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
 )
 
-mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
 
 myfile<-paste(outpath,'MeanSpeedC57stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+temp <- subset(dfAveraged, Day %in% "Day1")
+
+testMethod<-t.test(Average.Pool.Speed ~ age_group, data = temp)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'MeanSpeedC57Day1stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS

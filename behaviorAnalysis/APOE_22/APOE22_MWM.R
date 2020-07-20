@@ -108,10 +108,11 @@ ggsave(paste(outpath,'poolTimeAPOE22.pdf',sep=''), plot = last_plot(), device='p
 testMethod<-t.test(Duration ~ Age, data = dfAveraged)
 
 mytTable<-as_tibble(
-  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
 )
 
-mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
 
 myfile<-paste(outpath,'poolTimeAPOE22stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
@@ -127,10 +128,11 @@ ggsave(paste(outpath,'poolDistAPOE.pdf',sep=''), plot = last_plot(), device='pdf
 testMethod<-t.test(Distance ~ Age, data = dfAveraged)
 
 mytTable<-as_tibble(
-  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
 )
 
-mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
 
 myfile<-paste(outpath,'poolDistAPOE22stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
@@ -146,12 +148,27 @@ ggsave(paste(outpath,'NormSWDistAPOE.pdf',sep=''), plot = last_plot(), device = 
 testMethod<-t.test(NormSWDist ~ Age, data = dfAveraged)
 
 mytTable<-as_tibble(
-  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
 )
 
-mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
 
 myfile<-paste(outpath,'NormSWDistAPOE22stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+temp <- subset(dfAveraged, Stage %in% "Day1")
+
+testMethod<-t.test(NormSWDist ~ Age, data = temp)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'NormSWDistAPOE22Day1stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #___________________________________________________________________
 #4. NORMALIZED Time swam in SW quadrant for APOE 2/2, young vs old
@@ -164,10 +181,11 @@ ggsave(paste(outpath,'NormSWTimeAPOE.pdf',sep=''), plot = last_plot(), device = 
 testMethod<-t.test(NormSWTime ~ Age, data = dfAveraged)
 
 mytTable<-as_tibble(
-  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
 )
 
-mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
 
 myfile<-paste(outpath,'NormSWTimeAPOE22stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
@@ -182,12 +200,41 @@ ggsave(paste(outpath,'SWTimeAdjustAPOE.pdf',sep=''), plot = last_plot(), device 
 testMethod<-t.test(residuals ~ Age, data = dfAveraged)
 
 mytTable<-as_tibble(
-  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfAveraged))
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
 )
 
-mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
 
 myfile<-paste(outpath,'SWTimeAdjustAPOE22stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+temp <-subset(dfAveraged, Stage %in% "Day1")
+
+testMethod<-t.test(residuals ~ Age, data = temp)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'SWTimeAdjustAPOE22Day1stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+temp <-subset(dfAveraged, Stage %in% "Day2")
+
+testMethod<-t.test(residuals ~ Age, data = temp)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'SWTimeAdjustAPOE22Day2stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS

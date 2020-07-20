@@ -83,6 +83,19 @@ ggerrorplot(dfDay1_Obj4, x='Trial', y='Time', color='Age', fill='Age',
 ggsave(paste(outpath, 'Day1Obj4TimeBoxNOR.pdf', sep=''), plot=last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
 
+temp <- subset(dfDay1_Obj4, Trial %in% "1")
+
+testMethod<-t.test(Time ~ Age, data = temp)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(temp))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'Obj4Day1Trial1stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
 #3. Objects 2 RI over Day 2 
 ggerrorplot(dfDay2_Obj2RI, x='Trial', y='RI', color='Age', fill='Age',
             desc_stat='mean_se', palette=c('blueviolet', 'chartreuse1'), size=1,
@@ -98,3 +111,18 @@ ggerrorplot(dfFin, x='Stage', y='RI', color='Age', fill='Age',
             legend='top', position=position_dodge(0.2))
 ggsave(paste(outpath, 'Day235Obj2RIBoxNOR.pdf', sep=''), plot=last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+temp <- subset(dfFin, Stage %in% "Day3_Novel Object2")
+
+testMethod<-t.test(RI ~ Age, data = temp)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(temp))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'RIDay3stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+

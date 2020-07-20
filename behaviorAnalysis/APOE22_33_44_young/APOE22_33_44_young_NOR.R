@@ -8,8 +8,8 @@ library(dplyr)
 library(reshape2)
 library(ggpubr)
 
-masterFile='/Users/bass/Behavior_Andrei/APOE_NOR/APOE_22_33_44_NORcombined.csv'
-outpath='/Users/bass/Behavior_Andrei/APOE_NOR/R_Graphs/'
+masterFile='/Users/ar_ni/OneDrive/Desktop/APOE_NOR/APOE_22_33_44_NORcombined.csv'
+outpath='/Users/ar_ni/OneDrive/Desktop/APOE_NOR/R_Graphs/'
 
 info<-read.csv(masterFile, header=TRUE)
 df<-data.frame(info)
@@ -88,6 +88,69 @@ ggerrorplot(dfDay2_Obj2RI, x='Trial', y='RI', color='Genotype', fill='Genotype',
             legend='top', position=position_dodge(0.2))
 ggsave(paste(outpath, 'Day2Obj2RIBoxNOR.pdf', sep=''), plot=last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+temp <- subset(dfDay2_Obj2RI, Trial %in% "1")
+
+testMethod<-oneway.test(RI ~ Genotype, data = temp)
+postHoc<-pairwise.t.test(temp$RI, temp$Genotype)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(temp))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=4, ncol=3)
+postHocTable[1,]=c('', '', '')
+postHocTable[2,]=c('Pairwise Comparisons (p-value)', 'APOE2/2', 'APOE3/3')
+postHocTable[3,]=c('APOE3/3', postHoc$p.value[1,1], postHoc$p.value[1,2])
+postHocTable[4,]=c('APOE4/4', postHoc$p.value[2,1], postHoc$p.value[2,2])
+
+myfile<-paste(outpath,'Obj2Day2Trial1stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+temp <- subset(dfDay2_Obj2RI, Trial %in% "2")
+
+testMethod<-oneway.test(RI ~ Genotype, data = temp)
+postHoc<-pairwise.t.test(temp$RI, temp$Genotype)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(temp))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=4, ncol=3)
+postHocTable[1,]=c('', '', '')
+postHocTable[2,]=c('Pairwise Comparisons (p-value)', 'APOE2/2', 'APOE3/3')
+postHocTable[3,]=c('APOE3/3', postHoc$p.value[1,1], postHoc$p.value[1,2])
+postHocTable[4,]=c('APOE4/4', postHoc$p.value[2,1], postHoc$p.value[2,2])
+
+myfile<-paste(outpath,'Obj2Day2Trial2stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+temp <- subset(dfDay2_Obj2RI, Trial %in% "4")
+
+testMethod<-oneway.test(RI ~ Genotype, data = temp)
+postHoc<-pairwise.t.test(temp$RI, temp$Genotype)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(temp))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=4, ncol=3)
+postHocTable[1,]=c('', '', '')
+postHocTable[2,]=c('Pairwise Comparisons (p-value)', 'APOE2/2', 'APOE3/3')
+postHocTable[3,]=c('APOE3/3', postHoc$p.value[1,1], postHoc$p.value[1,2])
+postHocTable[4,]=c('APOE4/4', postHoc$p.value[2,1], postHoc$p.value[2,2])
+
+myfile<-paste(outpath,'Obj2Day2Trial4stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 
 #4. Object 2 RI over Day 2 Short-term Memory, Day 3, and Day 5
 ggerrorplot(dfFin, x='Stage', y='RI', color='Genotype', fill='Genotype',
