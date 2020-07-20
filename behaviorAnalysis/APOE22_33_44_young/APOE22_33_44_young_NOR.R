@@ -19,6 +19,11 @@ df3<-subset(df, (APOE=='APOE3/3'))
 df4<-subset(df, (APOE=='APOE4/4'))
 dfAll<- rbind(df2, df3, df4)
 
+dfOpen<-subset(dfAll, (Stage=='openfield'))
+dfOpen<-subset(dfOpen, (APOE!='HN'))
+
+dfLP<-subset(dfAll, (Stage=='Dilutions') & (Trial=="1"))
+
 dfDay1<-subset(dfAll, (Stage=='Dilutions'))
 dfDay1_Obj4<-data.frame(dfDay1$Animal, dfDay1$APOE, dfDay1$Sex, dfDay1$Stage, dfDay1$Trial, dfDay1$Object4.headtime)
 dfDay1_Obj4<-cbind(dfDay1_Obj4, Object='Obj4')
@@ -159,3 +164,60 @@ ggerrorplot(dfFin, x='Stage', y='RI', color='Genotype', fill='Genotype',
             legend='top', position=position_dodge(0.2))
 ggsave(paste(outpath, 'Day235Obj2RIBoxNOR.pdf', sep=''), plot=last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+
+
+#Location Preferences
+#9. Barplot with Standard Error of Head times for all objects in Day 1 Trial 1
+myLP<-subset(dfLP, select=c(APOE, Object1.headtime, Object2.headtime, Object.3.headtime, Object4.headtime))
+
+myMean<-aggregate(myLP, by=list(APOE=myLP$APOE), mean)
+myMean<-myMean[-c(2)]
+myMean.long<-melt(myMean,id.vars="APOE")
+mySD<-aggregate(myLP, by=list(APOE=myLP$APOE), sd)
+mySD<-mySD[-c(2)]
+mySD.long<-melt(mySD,id.vars="APOE")
+myMean.long<-do.call(data.frame, myMean.long)
+mySD.long<-do.call(data.frame, mySD.long)
+myMean.long$SE<-mySD.long$value/sqrt(9)
+
+head(subset(myLP, (myLP$APOE==mySD.long$APOE)), 25)
+head(myMean.long, 25)
+head(mySD.long, 25)
+
+tabbedMeans<-tapply(myMean.long$value, list(myMean.long$variable, myMean.long$APOE), function(x) c(x=x))
+tabbedSE<-tapply(myMean.long$SE, list(myMean.long$variable, myMean.long$APOE), function(x) c(x=x))
+tabbedMeans<-tabbedMeans[,1:3]
+tabbedSE<-tabbedSE[,1:3]
+
+pdf(file='LPAPOE.pdf')
+barCenters<-barplot(height=tabbedMeans,
+                    density=c(100,5,15,30),
+                    angle=c(0,0,45,90),
+                    ylim=c(0,14),
+                    col='blueviolet',
+                    beside=TRUE, las=1,
+                    cex.names=0.75,
+                    main="Head time",
+                    ylab="Time (s)",
+                    border="black", axes=TRUE,
+                    legend.text=TRUE,
+                    args.legend=list(title="Object",
+                                     x="topright",
+                                     cex=.7))
+segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+         tabbedMeans + tabbedSE * 2, lwd = 1.5)
+arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+       tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
+       code = 3, length = 0.05)
+dev.off() #Close pdf file
+
+#Openfield
+boxplot(Centerzone.headtime ~ APOE, data = dfOpen)
+#Work in progress!!!
+
+
+#9. Barplot with Standard Error of Head times for all objects in Day 1 Trial 1
+ggline(dfDay1_Obj4, x='Trial', y='Time', color='Genotype', fill='Genotype',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1', 'red'), size=1,
+       point.size=1.5, xlab='Trial', ylab='Object 4 Head Time (s)', legend='top')

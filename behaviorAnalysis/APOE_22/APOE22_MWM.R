@@ -75,11 +75,9 @@ colnames(dfSE)<-c('Animal', 'Genotype', 'Day', 'Sex', 'Age', 'Time', 'Distance',
 
 dfQuad<-rbind(dfSW, dfSE, dfNW, dfNE)
 dfQuad2<-subset(dfQuad, (Genotype=='APOE2/2')) #Info on all quadrants for genotype APOE2/2
-#dfQuad3<-subset(dfQuad, (Genotype=='APOE3/3')) #Info on all quadrants for genotype APOE3/3
-#dfQuad4<-subset(dfQuad, (Genotype=='APOE4/4')) #Info on all quadrants for genotype APOE4/4
 dfQuad2<-na.omit(dfQuad2) #Omit n/a
-#dfQuad3<-na.omit(dfQuad3) #Omit n/a
-#dfQuad4<-na.omit(dfQuad4) #Omit n/a
+dfQuady<-subset(dfQuad2, (Age=="young"))
+dfQuado<-subset(dfQuad2, (Age=="old"))
 dfQuadp1<-subset(dfQuad, Day=='Probe_D5')
 dfQuadp2<-subset(dfQuad, Day=='Probe_D8')
 
@@ -238,24 +236,19 @@ myfile<-paste(outpath,'SWTimeAdjustAPOE22Day2stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS
-#6. Barplot with Standard Error of DISTANCE in Quadrant for Genotype 2/2-- PROBE TRIAL
-myMean<-aggregate(dfQuad2$Distance, by=list(Day=dfQuad2$Day, Quadrant=dfQuad2$Quadrant), mean)
-mySD<-aggregate(dfQuad2$Distance, by=list(Day=dfQuad2$Day, Quadrant=dfQuad2$Quadrant), sd)
+#Barplot with Standard Error of DISTANCE in Quadrant for age young-- PROBE TRIAL
+myMean<-aggregate(dfQuady$Distance, by=list(Day=dfQuady$Day, Quadrant=dfQuady$Quadrant), mean)
+mySD<-aggregate(dfQuady$Distance, by=list(Day=dfQuady$Day, Quadrant=dfQuady$Quadrant), sd)
 myMean<-do.call(data.frame, myMean)
 mySD<-do.call(data.frame, mySD)
 myMean$SE<-mySD$x/sqrt(11)
-#myMean$SE<-mySD$x/sqrt(nrow(subset(dfQuad2, (dfQuad2$Quadrant==mySD$Quadrant))))
-
-head(subset(dfQuad2, (dfQuad2$Quadrant==mySD$Quadrant)), 25)
-head(myMean, 25)
-head(mySD, 25)
 
 tabbedMeans<-tapply(myMean$x, list(myMean$Quadrant, myMean$Day), function(x) c(x=x))
 tabbedSE<-tapply(myMean$SE, list(myMean$Quadrant, myMean$Day), function(x) c(x=x))
 tabbedMeans<-tabbedMeans[,6:7]
 tabbedSE<-tabbedSE[,6:7]
 
-pdf(file='ProbeDistInQuad_2APOE.pdf')
+pdf(file='ProbeDistInQuadyYoungAPOE22.pdf')
 barCenters<-barplot(height=tabbedMeans,
                     density=c(100,5,15,30),
                     angle=c(0,0,45,90),
@@ -263,7 +256,7 @@ barCenters<-barplot(height=tabbedMeans,
                     col='blueviolet',
                     beside=TRUE, las=1,
                     cex.names=0.75,
-                    main="Distance per Quadrant APOE2/2",
+                    main="Distance per Quadrant APOE2/2 (Young)",
                     ylab="Distance (m)",
                     border="black", axes=TRUE,
                     legend.text=TRUE,
@@ -277,9 +270,60 @@ arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
        code = 3, length = 0.05)
 dev.off() #Close pdf file
 
-#Barplot with Standard Error of DISTANCE in Quadrant for Genotype 3/3-- PROBE TRIAL
-myMean<-aggregate(dfQuad3$Distance, by=list(Day=dfQuad3$Day, Quadrant=dfQuad3$Quadrant), mean)
-mySD<-aggregate(dfQuad3$Distance, by=list(Day=dfQuad3$Day, Quadrant=dfQuad3$Quadrant), sd)
+dfQuadyp1<-subset(dfQuady, Day=='Probe_D5')
+dfQuadyp2<-subset(dfQuady, Day=='Probe_D8')
+
+datap1.lm <- lm(Distance ~ Quadrant, data = dfQuadyp1)
+datap1.aov <- aov(datap1.lm)
+tukeyp1.test <- TukeyHSD(datap1.aov)
+tukeyp1.test
+
+datap2.lm <- lm(Distance ~ Quadrant, data = dfQuadyp2)
+datap2.aov <- aov(datap2.lm)
+tukeyp2.test <- TukeyHSD(datap2.aov)
+
+testMethodp1<-oneway.test(Distance ~ Quadrant, data = dfQuadyp1)
+testMethodp2<-oneway.test(Distance ~ Quadrant, data = dfQuadyp2)
+
+mytTablep1<-as_tibble(
+  cbind(paste("Probe 1", testMethodp1$data.name, sep=" "), testMethodp1$statistic, testMethodp1$p.value, testMethodp1$parameter[1], nrow(dfQuadyp1)) #Get values from summary
+)
+
+mytTablep2<-as_tibble(
+  cbind(paste("Probe 2", testMethodp2$data.name, sep=" "), testMethodp2$statistic, testMethodp2$p.value, testMethodp2$parameter[1], nrow(dfQuadyp2)) #Get values from summary
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTablep1<-matrix(nrow=8, ncol=5)
+postHocTablep1[1,]=c('', '', '', '', '')
+postHocTablep1[2,]=c('Probe 1 TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTablep1[3,]=c('SE-SW', tukeyp1.test$Quadrant[1,1], tukeyp1.test$Quadrant[1,2], tukeyp1.test$Quadrant[1,3], tukeyp1.test$Quadrant[1,4])
+postHocTablep1[4,]=c('NW-SW', tukeyp1.test$Quadrant[2,1], tukeyp1.test$Quadrant[2,2], tukeyp1.test$Quadrant[2,3], tukeyp1.test$Quadrant[2,4])
+postHocTablep1[5,]=c('NE-SW', tukeyp1.test$Quadrant[3,1], tukeyp1.test$Quadrant[3,2], tukeyp1.test$Quadrant[3,3], tukeyp1.test$Quadrant[3,4])
+postHocTablep1[6,]=c('NW-SE', tukeyp1.test$Quadrant[4,1], tukeyp1.test$Quadrant[4,2], tukeyp1.test$Quadrant[4,3], tukeyp1.test$Quadrant[4,4])
+postHocTablep1[7,]=c('NE-SE', tukeyp1.test$Quadrant[5,1], tukeyp1.test$Quadrant[5,2], tukeyp1.test$Quadrant[5,3], tukeyp1.test$Quadrant[5,4])
+postHocTablep1[8,]=c('NE-NW', tukeyp1.test$Quadrant[6,1], tukeyp1.test$Quadrant[6,2], tukeyp1.test$Quadrant[6,3], tukeyp1.test$Quadrant[6,4])
+
+postHocTablep2<-matrix(nrow=8, ncol=5)
+postHocTablep2[1,]=c('', '', '', '', '')
+postHocTablep2[2,]=c('Probe 2 TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTablep2[3,]=c('SE-SW', tukeyp2.test$Quadrant[1,1], tukeyp2.test$Quadrant[1,2], tukeyp2.test$Quadrant[1,3], tukeyp2.test$Quadrant[1,4])
+postHocTablep2[4,]=c('NW-SW', tukeyp2.test$Quadrant[2,1], tukeyp2.test$Quadrant[2,2], tukeyp2.test$Quadrant[2,3], tukeyp2.test$Quadrant[2,4])
+postHocTablep2[5,]=c('NE-SW', tukeyp2.test$Quadrant[3,1], tukeyp2.test$Quadrant[3,2], tukeyp2.test$Quadrant[3,3], tukeyp2.test$Quadrant[3,4])
+postHocTablep2[6,]=c('NW-SE', tukeyp2.test$Quadrant[4,1], tukeyp2.test$Quadrant[4,2], tukeyp2.test$Quadrant[4,3], tukeyp2.test$Quadrant[4,4])
+postHocTablep2[7,]=c('NE-SE', tukeyp2.test$Quadrant[5,1], tukeyp2.test$Quadrant[5,2], tukeyp2.test$Quadrant[5,3], tukeyp2.test$Quadrant[5,4])
+postHocTablep2[8,]=c('NE-NW', tukeyp2.test$Quadrant[6,1], tukeyp2.test$Quadrant[6,2], tukeyp2.test$Quadrant[6,3], tukeyp2.test$Quadrant[6,4])
+
+myfile<-paste(outpath,'ProbeQuadDistyoungAPOE22stats.csv')
+write.table(mytTablep1, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTablep2, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+write.table(postHocTablep1, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+write.table(postHocTablep2, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Barplot with Standard Error of DISTANCE in Quadrant for age old-- PROBE TRIAL
+myMean<-aggregate(dfQuado$Distance, by=list(Day=dfQuado$Day, Quadrant=dfQuado$Quadrant), mean)
+mySD<-aggregate(dfQuado$Distance, by=list(Day=dfQuado$Day, Quadrant=dfQuado$Quadrant), sd)
 myMean<-do.call(data.frame, myMean)
 mySD<-do.call(data.frame, mySD)
 myMean$SE<-mySD$x/sqrt(11)
@@ -289,7 +333,7 @@ tabbedSE<-tapply(myMean$SE, list(myMean$Quadrant, myMean$Day), function(x) c(x=x
 tabbedMeans<-tabbedMeans[,6:7]
 tabbedSE<-tabbedSE[,6:7]
 
-pdf(file='ProbeDistInQuad_3APOE.pdf')
+pdf(file='ProbeDistInQuadOldAPOE22.pdf')
 barCenters<-barplot(height=tabbedMeans,
                     density=c(100,5,15,30),
                     angle=c(0,0,45,90),
@@ -297,7 +341,7 @@ barCenters<-barplot(height=tabbedMeans,
                     col='blueviolet',
                     beside=TRUE, las=1,
                     cex.names=0.75,
-                    main="Distance per Quadrant APOE3/3",
+                    main="Distance per Quadrant APOE2/2 (Old)",
                     ylab="Distance (m)",
                     border="black", axes=TRUE,
                     legend.text=TRUE,
@@ -311,41 +355,58 @@ arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
        code = 3, length = 0.05)
 dev.off() #Close pdf file
 
-#Barplot with Standard Error of DISTANCE in Quadrant for Genotype 4/4-- PROBE TRIAL
-myMean<-aggregate(dfQuad4$Distance, by=list(Day=dfQuad4$Day, Quadrant=dfQuad4$Quadrant), mean)
-mySD<-aggregate(dfQuad4$Distance, by=list(Day=dfQuad4$Day, Quadrant=dfQuad4$Quadrant), sd)
-myMean<-do.call(data.frame, myMean)
-mySD<-do.call(data.frame, mySD)
-myMean$SE<-mySD$x/sqrt(11)
+dfQuadop1<-subset(dfQuado, Day=='Probe_D5')
+dfQuadop2<-subset(dfQuado, Day=='Probe_D8')
 
-tabbedMeans<-tapply(myMean$x, list(myMean$Quadrant, myMean$Day), function(x) c(x=x))
-tabbedSE<-tapply(myMean$SE, list(myMean$Quadrant, myMean$Day), function(x) c(x=x))
-tabbedMeans<-tabbedMeans[,6:7]
-tabbedSE<-tabbedSE[,6:7]
+datap1.lm <- lm(Distance ~ Quadrant, data = dfQuadop1)
+datap1.aov <- aov(datap1.lm)
+tukeyp1.test <- TukeyHSD(datap1.aov)
+tukeyp1.test
 
-pdf(file='ProbeDistInQuad_4APOE.pdf')
-barCenters<-barplot(height=tabbedMeans,
-                    density=c(100,5,15,30),
-                    angle=c(0,0,45,90),
-                    ylim=c(0,.8),
-                    col='blueviolet',
-                    beside=TRUE, las=1,
-                    cex.names=0.75,
-                    main="Distance per Quadrant APOE4/4",
-                    ylab="Distance (m)",
-                    border="black", axes=TRUE,
-                    legend.text=TRUE,
-                    args.legend=list(title="Quadrant",
-                                     x="topright",
-                                     cex=.7))
-segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
-         tabbedMeans + tabbedSE * 2, lwd = 1.5)
-arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
-       tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
-       code = 3, length = 0.05)
-dev.off() #Close pdf file
+datap2.lm <- lm(Distance ~ Quadrant, data = dfQuadop2)
+datap2.aov <- aov(datap2.lm)
+tukeyp2.test <- TukeyHSD(datap2.aov)
 
-#Barplot with Standard Error of Distance in Quadrant SW for All Genotypes-- PROBE TRIAL
+testMethodp1<-oneway.test(Distance ~ Quadrant, data = dfQuadop1)
+testMethodp2<-oneway.test(Distance ~ Quadrant, data = dfQuadop2)
+
+mytTablep1<-as_tibble(
+  cbind(paste("Probe 1", testMethodp1$data.name, sep=" "), testMethodp1$statistic, testMethodp1$p.value, testMethodp1$parameter[1], nrow(dfQuadop1)) #Get values from summary
+)
+
+mytTablep2<-as_tibble(
+  cbind(paste("Probe 2", testMethodp2$data.name, sep=" "), testMethodp2$statistic, testMethodp2$p.value, testMethodp2$parameter[1], nrow(dfQuadop2)) #Get values from summary
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTablep1<-matrix(nrow=8, ncol=5)
+postHocTablep1[1,]=c('', '', '', '', '')
+postHocTablep1[2,]=c('Probe 1 TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTablep1[3,]=c('SE-SW', tukeyp1.test$Quadrant[1,1], tukeyp1.test$Quadrant[1,2], tukeyp1.test$Quadrant[1,3], tukeyp1.test$Quadrant[1,4])
+postHocTablep1[4,]=c('NW-SW', tukeyp1.test$Quadrant[2,1], tukeyp1.test$Quadrant[2,2], tukeyp1.test$Quadrant[2,3], tukeyp1.test$Quadrant[2,4])
+postHocTablep1[5,]=c('NE-SW', tukeyp1.test$Quadrant[3,1], tukeyp1.test$Quadrant[3,2], tukeyp1.test$Quadrant[3,3], tukeyp1.test$Quadrant[3,4])
+postHocTablep1[6,]=c('NW-SE', tukeyp1.test$Quadrant[4,1], tukeyp1.test$Quadrant[4,2], tukeyp1.test$Quadrant[4,3], tukeyp1.test$Quadrant[4,4])
+postHocTablep1[7,]=c('NE-SE', tukeyp1.test$Quadrant[5,1], tukeyp1.test$Quadrant[5,2], tukeyp1.test$Quadrant[5,3], tukeyp1.test$Quadrant[5,4])
+postHocTablep1[8,]=c('NE-NW', tukeyp1.test$Quadrant[6,1], tukeyp1.test$Quadrant[6,2], tukeyp1.test$Quadrant[6,3], tukeyp1.test$Quadrant[6,4])
+
+postHocTablep2<-matrix(nrow=8, ncol=5)
+postHocTablep2[1,]=c('', '', '', '', '')
+postHocTablep2[2,]=c('Probe 2 TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTablep2[3,]=c('SE-SW', tukeyp2.test$Quadrant[1,1], tukeyp2.test$Quadrant[1,2], tukeyp2.test$Quadrant[1,3], tukeyp2.test$Quadrant[1,4])
+postHocTablep2[4,]=c('NW-SW', tukeyp2.test$Quadrant[2,1], tukeyp2.test$Quadrant[2,2], tukeyp2.test$Quadrant[2,3], tukeyp2.test$Quadrant[2,4])
+postHocTablep2[5,]=c('NE-SW', tukeyp2.test$Quadrant[3,1], tukeyp2.test$Quadrant[3,2], tukeyp2.test$Quadrant[3,3], tukeyp2.test$Quadrant[3,4])
+postHocTablep2[6,]=c('NW-SE', tukeyp2.test$Quadrant[4,1], tukeyp2.test$Quadrant[4,2], tukeyp2.test$Quadrant[4,3], tukeyp2.test$Quadrant[4,4])
+postHocTablep2[7,]=c('NE-SE', tukeyp2.test$Quadrant[5,1], tukeyp2.test$Quadrant[5,2], tukeyp2.test$Quadrant[5,3], tukeyp2.test$Quadrant[5,4])
+postHocTablep2[8,]=c('NE-NW', tukeyp2.test$Quadrant[6,1], tukeyp2.test$Quadrant[6,2], tukeyp2.test$Quadrant[6,3], tukeyp2.test$Quadrant[6,4])
+
+myfile<-paste(outpath,'ProbeQuadDistoldAPOE22stats.csv')
+write.table(mytTablep1, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTablep2, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+write.table(postHocTablep1, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+write.table(postHocTablep2, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Barplot with Standard Error of Distance in Quadrant SW for All ages-- PROBE TRIAL
 myMean<-aggregate(dfSW$Distance, by=list(Day=dfSW$Day, Age=dfSW$Age), mean)
 mySD<-aggregate(dfSW$Distance, by=list(Day=dfSW$Day, Age=dfSW$Age), sd)
 myMean<-do.call(data.frame, myMean)
@@ -378,3 +439,42 @@ arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
        tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
        code = 3, length = 0.05)
 dev.off() #Close pdf file
+
+dfQuadySW<-subset(dfSW, Age=='young')
+dfQuadoSW<-subset(dfSW, Age=='old')
+
+datay.lm <- lm(Distance ~ Day, data = dfQuadySW)
+datay.aov <- aov(datay.lm)
+tukeyy.test <- TukeyHSD(datay.aov)
+
+datao.lm <- lm(Distance ~ Day, data = dfQuadoSW)
+datao.aov <- aov(datao.lm)
+tukeyo.test <- TukeyHSD(datao.aov)
+
+testMethody<-oneway.test(Distance ~ Day, data = dfQuadySW)
+testMethodo<-oneway.test(Distance ~ Day, data = dfQuadoSW)
+
+mytTabley<-as_tibble(
+  cbind(paste("Young", testMethody$data.name, sep=" "), testMethody$statistic, testMethody$p.value, testMethody$parameter[1], nrow(dfQuadySW)) #Get values from summary
+)
+mytTableo<-as_tibble(
+  cbind(paste("Old", testMethodo$data.name, sep=" "), testMethodo$statistic, testMethodo$p.value, testMethodo$parameter[1], nrow(dfQuadoSW)) #Get values from summary
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTabley<-matrix(nrow=3, ncol=5)
+postHocTabley[1,]=c('', '', '', '', '')
+postHocTabley[2,]=c('Young TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTabley[3,]=c('Probe2-Probe1', tukeyy.test$Day[1,1], tukeyy.test$Day[1,2], tukeyy.test$Day[1,3], tukeyy.test$Day[1,4])
+
+postHocTableo<-matrix(nrow=3, ncol=5)
+postHocTableo[1,]=c('', '', '', '', '')
+postHocTableo[2,]=c('Old TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableo[3,]=c('Probe2-Probe1', tukeyo.test$Day[1,1], tukeyo.test$Day[1,2], tukeyo.test$Day[1,3], tukeyo.test$Day[1,4])
+
+myfile<-paste(outpath,'ProbeQuadDistAPOE22stats.csv')
+write.table(mytTabley, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableo, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+write.table(postHocTabley, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+write.table(postHocTableo, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
