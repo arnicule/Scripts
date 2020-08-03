@@ -74,6 +74,9 @@ dfSE<-data.frame(dfProbe$Animal, dfProbe$genotype, dfProbe$age_group, dfProbe$Da
 dfSE<-cbind(dfSE,quadrant='SE')
 colnames(dfSE)<-c('Animal', 'genotype', 'Age','Day', 'Time','Distance','TimeNorm', 'DistNorm','Quadrant')
 
+dfSWp1<-subset(dfSW, (Day=='ProbeTrial1'))
+dfSWp2<-subset(dfSW, (Day=='ProbeTrial2'))
+
 dfQuad<-rbind(dfSW,dfSE,dfNW,dfNE)
 dfQuady<-subset(dfQuad, (Age=='young'))
 dfQuado<-subset(dfQuad, (Age=='old'))
@@ -83,8 +86,8 @@ dfQuadp1<-subset(dfQuad, Day=='ProbeTrial1')
 dfQuadp2<-subset(dfQuad, Day=='ProbeTrial2')
 
 #Adjust SW Time for covariate Mean Speed
-cor.test(dfAveraged$SW.Time, dfAveraged$Average.Pool.Speed)
-lm1<-lm(SW.Time ~ Average.Pool.Speed, data=dfAveraged, na.action=NULL)
+cor.test(dfAveraged$NormSWTime, dfAveraged$Average.Pool.Speed)
+lm1<-lm(NormSWTime ~ Average.Pool.Speed, data=na.omit(dfAveraged, cols="Average.Pool.Speed")) #Na.action not working!
 cor.test(lm1$residuals, dfAveraged$Average.Pool.Speed)
 dfAveraged<-cbind(dfAveraged, residuals=lm1$residuals)
 
@@ -260,13 +263,13 @@ myfile<-paste(outpath,'poolTimeC57Day1Femalestats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 
 #________________________________________________________________________
-#4. Time spend in SW Quadrant for ages young vs. old separated by sex
-ggline(dfAveraged, x='Day', y='SW.Time', color='age_group', fill='age_group',
+#4. Normalized time spend in SW Quadrant for ages young vs. old separated by sex
+ggline(dfAveraged, x='Day', y='NormSWTime', color='age_group', fill='age_group',
           error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
-          point.size=1.5, xlab='', ylab='SW Time (s)', legend='top',
+          point.size=1.5, xlab='', ylab='Percent SW Time', legend='top',
           facet.by="sex"
 )
-ggsave(paste(outpath,'SWTimeC57Sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+ggsave(paste(outpath,'NormSWTimeC57Sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
 tempF <- subset(dfAveraged, sex %in% "F")
@@ -286,7 +289,7 @@ mytTableM<-as_tibble(
 
 mycolnames<-c('contrast', names(testMethodF$estimate)[1], names(testMethodF$estimate)[2], names(testMethodF$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
 
-myfile<-paste(outpath,'SWTimeC57Sexstats.csv')
+myfile<-paste(outpath,'NormSWTimeC57Sexstats.csv')
 write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
 #________________________________________________________________________
@@ -312,6 +315,16 @@ mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estima
 myfile<-paste(outpath,'NormSWDistC57stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #__________________________________________________
+
+#5. NORMALIZED distance swam in SW quadrant for ages young vs old, separated by sex
+ggline(dfAveraged, x='Day', y='NormSWDist', color='age_group', fill='age_group',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
+       point.size=1.5, xlab='', ylab='Percent of Distance', legend='top', title='Normalized SW Distance (C57)',
+       facet.by="sex"
+)
+ggsave(paste(outpath,'NormSWDistC57Sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
 #6. NORMALIZED Time swam in SW quadrant for ages young vs old
 ggline(dfAveraged, x='Day', y='NormSWTime', color='age_group', fill='age_group',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet', 'chartreuse1'), size=1, 
@@ -367,6 +380,15 @@ mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estima
 
 myfile<-paste(outpath,'MeanSpeedC57Day1stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+#7. Mean speed for ages young vs old, separated by sex
+ggline(dfAveraged, x='Day', y='Average.Pool.Speed', color='age_group', fill='age_group',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet', 'chartreuse1'), size=1, 
+       point.size = 1.5, xlab='', ylab='Mean Speed (m/s)', legend='top', title='Mean Speed (C57)', facet.by="sex"
+)
+ggsave(paste(outpath,'MeanSpeedC57Sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS
 #8. Barplot with Standard Error of DISTANCE in Quadrant for Young mice-- Probe Trial
@@ -611,3 +633,139 @@ write.table(mytTabley, file=myfile, col.names = mycolnames , sep = "," , row.nam
 write.table(mytTableo, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
 write.table(postHocTabley, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 write.table(postHocTableo, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Barplot with Standard Error of Normalized Distance in Quadrant SW for both ages in Probe 1-- PROBE TRIAL
+myMean<-aggregate(dfSWp1$DistNorm, by=list(Age=dfSWp1$Age), mean)
+mySD<-aggregate(dfSWp1$DistNorm, by=list(Age=dfSWp1$Age), sd)
+myMean<-do.call(data.frame, myMean)
+mySD<-do.call(data.frame, mySD)
+myMean$SE<-mySD$x/sqrt(30)
+
+tabbedMeans<-tapply(myMean$x, list(myMean$Age), function(x) c(x=x))
+tabbedSE<-tapply(myMean$SE, list(myMean$Age), function(x) c(x=x))
+tabbedMeans<-tabbedMeans[6,1:2]
+tabbedSE<-tabbedSE[6,1:2]
+
+pdf(file='ProbeNormSWDistP1C57.pdf')
+barCenters<-barplot(height=tabbedMeans,
+                    density=c(100,5,15,30),
+                    angle=c(0,0,45,90),
+                    ylim=c(0,6),
+                    col='blueviolet',
+                    beside=TRUE, las=1,
+                    cex.names=0.75,
+                    main="Percent Distance in Quadrant SW Probe 1",
+                    ylab="Percent Distance in SW",
+                    border="black", axes=TRUE,
+                    legend.text=TRUE,
+                    args.legend=list(title="Age",
+                                     x="topright",
+                                     cex=.7))
+segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+         tabbedMeans + tabbedSE *2, lwd = 1.5)
+arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+       tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
+       code = 3, length = 0.05)
+dev.off() #Close pdf file
+
+#Barplot with Standard Error of Normalized Distance in Quadrant SW for both ages in Probe 2-- PROBE TRIAL
+myMean<-aggregate(dfSWp2$DistNorm, by=list(Age=dfSWp2$Age), mean)
+mySD<-aggregate(dfSWp2$DistNorm, by=list(Age=dfSWp2$Age), sd)
+myMean<-do.call(data.frame, myMean)
+mySD<-do.call(data.frame, mySD)
+myMean$SE<-mySD$x/sqrt(30)
+
+tabbedMeans<-tapply(myMean$x, list(myMean$Age), function(x) c(x=x))
+tabbedSE<-tapply(myMean$SE, list(myMean$Age), function(x) c(x=x))
+tabbedMeans<-tabbedMeans[7,1:2]
+tabbedSE<-tabbedSE[7,1:2]
+
+pdf(file='ProbeNormSWDistP2C57.pdf')
+barCenters<-barplot(height=tabbedMeans,
+                    density=c(100,5,15,30),
+                    angle=c(0,0,45,90),
+                    ylim=c(0,0.8),
+                    col='blueviolet',
+                    beside=TRUE, las=1,
+                    cex.names=0.75,
+                    main="Percent Distance in Quadrant SW Probe 2",
+                    ylab="Percent Distance in SW",
+                    border="black", axes=TRUE,
+                    legend.text=TRUE,
+                    args.legend=list(title="Age",
+                                     x="topright",
+                                     cex=.7))
+segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+         tabbedMeans + tabbedSE *2, lwd = 1.5)
+arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+       tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
+       code = 3, length = 0.05)
+dev.off() #Close pdf file
+
+#Barplot with Standard Error of Normalized Distance in Quadrant SW for both ages in Probe 1-- PROBE TRIAL, separated by sex
+myMean<-aggregate(dfSWp1$DistNorm, by=list(Sex=dfSWp1$Sex, Age=dfSWp1$Age), mean)
+mySD<-aggregate(dfSWp1$DistNorm, by=list(Sex=dfSWp1$Sex, Age=dfSWp1$Age), sd)
+myMean<-do.call(data.frame, myMean)
+mySD<-do.call(data.frame, mySD)
+myMean$SE<-mySD$x/sqrt(30)
+
+tabbedMeans<-tapply(myMean$x, list(myMean$Sex, myMean$Age), function(x) c(x=x))
+tabbedSE<-tapply(myMean$SE, list(myMean$Sex, myMean$Age), function(x) c(x=x))
+tabbedMeans<-tabbedMeans[6,1:2]
+tabbedSE<-tabbedSE[6,1:2]
+
+pdf(file='ProbeNormSWDistP1C57Sex.pdf')
+barCenters<-barplot(height=tabbedMeans,
+                    density=c(100,5,15,30),
+                    angle=c(0,0,45,90),
+                    ylim=c(0,6),
+                    col='blueviolet',
+                    beside=TRUE, las=1,
+                    cex.names=0.75,
+                    main="Percent Distance in Quadrant SW Probe 1",
+                    ylab="Percent Distance in SW",
+                    border="black", axes=TRUE,
+                    legend.text=TRUE,
+                    args.legend=list(title="Sex",
+                                     x="topright",
+                                     cex=.7))
+segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+         tabbedMeans + tabbedSE *2, lwd = 1.5)
+arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+       tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
+       code = 3, length = 0.05)
+dev.off() #Close pdf file
+
+#Barplot with Standard Error of Normalized Distance in Quadrant SW for both ages in Probe 2-- PROBE TRIAL, separated by sex
+myMean<-aggregate(dfSWp2$DistNorm, by=list(Sex=dfSWp2$Sex, Age=dfSWp2$Age), mean)
+mySD<-aggregate(dfSWp2$DistNorm, by=list(Sex=dfSWp2$Sex, Age=dfSWp2$Age), sd)
+myMean<-do.call(data.frame, myMean)
+mySD<-do.call(data.frame, mySD)
+myMean$SE<-mySD$x/sqrt(30)
+
+tabbedMeans<-tapply(myMean$x, list(myMean$Sex, myMean$Age), function(x) c(x=x))
+tabbedSE<-tapply(myMean$SE, list(myMean$Sex, myMean$Age), function(x) c(x=x))
+tabbedMeans<-tabbedMeans[7,1:2]
+tabbedSE<-tabbedSE[7,1:2]
+
+pdf(file='ProbeNormSWDistP2C57Sex.pdf')
+barCenters<-barplot(height=tabbedMeans,
+                    density=c(100,5,15,30),
+                    angle=c(0,0,45,90),
+                    ylim=c(0,0.8),
+                    col='blueviolet',
+                    beside=TRUE, las=1,
+                    cex.names=0.75,
+                    main="Percent Distance in Quadrant SW Probe 2",
+                    ylab="Percent Distance in SW",
+                    border="black", axes=TRUE,
+                    legend.text=TRUE,
+                    args.legend=list(title="Sex",
+                                     x="topright",
+                                     cex=.7))
+segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+         tabbedMeans + tabbedSE *2, lwd = 1.5)
+arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+       tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
+       code = 3, length = 0.05)
+dev.off() #Close pdf file

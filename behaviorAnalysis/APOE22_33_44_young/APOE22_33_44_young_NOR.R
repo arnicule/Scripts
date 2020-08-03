@@ -20,7 +20,7 @@ df4<-subset(df, (APOE=='APOE4/4'))
 dfAll<- rbind(df2, df3, df4)
 
 dfOpen<-subset(dfAll, (Stage=='openfield'))
-dfOpen<-subset(dfOpen, (APOE!='HN'))
+dfOpen<-droplevels(dfOpen)
 
 dfLP<-subset(dfAll, (Stage=='Dilutions') & (Trial=="1"))
 
@@ -212,9 +212,23 @@ arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
        code = 3, length = 0.05)
 dev.off() #Close pdf file
 
-#Openfield
-boxplot(Centerzone.headtime ~ APOE, data = dfOpen)
-#Work in progress!!!
+# Boxplots for Centerzone and Outerzone head time of all genotypes
+boxplot(Centerzone.headtime ~ APOE, data = dfOpen, ylim=range(0:300))
+ggsave(paste(outpath, 'openfieldcentertimeAPOE.pdf', sep=''), plot=last_plot(), device='pdf',
+       scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+boxplot(Outerzone.headtime ~ APOE, data = dfOpen, ylim=range(100:500))
+ggsave(paste(outpath, 'openfieldoutertimeAPOE.pdf', sep=''), plot=last_plot(), device='pdf',
+       scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+# Boxplots for Centerzone and Outerzone distance of all genotypes
+boxplot(Centerzone.distance ~ APOE, data = dfOpen, ylim=range(0:10))
+ggsave(paste(outpath, 'openfieldcenterdistAPOE.pdf', sep=''), plot=last_plot(), device='pdf',
+       scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+boxplot(Outerzone.distance ~ APOE, data = dfOpen, ylim=range(0:30))
+ggsave(paste(outpath, 'openfieldouterdistAPOE.pdf', sep=''), plot=last_plot(), device='pdf',
+       scale=1, width=5, height=5, unit=c("in"), dpi=300)
 
 
 #9. Barplot with Standard Error of Head times for all objects in Day 1 Trial 1

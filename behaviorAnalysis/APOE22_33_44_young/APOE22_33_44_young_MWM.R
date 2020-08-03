@@ -75,6 +75,9 @@ dfSE<-data.frame(dfProbe$Animal, dfProbe$APOE, dfProbe$Stage, dfProbe$Sex, dfPro
 dfSE<-cbind(dfSE, quadrant='SE')
 colnames(dfSE)<-c('Animal', 'Genotype', 'Day', 'Sex', 'Time', 'Distance', 'TimeNorm', 'DistNorm', 'Quadrant')
 
+dfSWp1<-subset(dfSW, (Day=='Probe_D5'))
+dfSWp2<-subset(dfSW, (Day=='Probe_D8'))
+
 dfQuad<-rbind(dfSW, dfSE, dfNW, dfNE)
 dfQuad2<-subset(dfQuad, (Genotype=='APOE2/2')) #Info on all quadrants for genotype APOE2/2
 dfQuad3<-subset(dfQuad, (Genotype=='APOE3/3')) #Info on all quadrants for genotype APOE3/3
@@ -85,9 +88,9 @@ dfQuad4<-na.omit(dfQuad4) #Omit n/a
 dfQuadp1<-subset(dfQuad, Day=='Probe_D5')
 dfQuadp2<-subset(dfQuad, Day=='Probe_D8')
 
-#Adjust SW Time for covariate Mean Speed
-cor.test(dfAveraged$SW.time, dfAveraged$Mean.speed)
-lm1<-lm(SW.time ~ Mean.speed, data=dfAveraged)
+#Adjust Normalized SW Time for covariate Mean Speed
+cor.test(dfAveraged$NormSWTime, dfAveraged$Mean.speed)
+lm1<-lm(NormSWTime ~ Mean.speed, data=dfAveraged)
 cor.test(lm1$residuals, dfAveraged$Mean.speed)
 dfAveraged<-cbind(dfAveraged, residuals=lm1$residuals)
 
@@ -409,6 +412,13 @@ write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.name
 write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 #___________________________________________________________________
 
+#5. NORMALIZED distance swam in SW quadrant for APOE 2/2, 3/3, and 4/4 separated by sex
+ggline(dfAveraged, x='Stage', y='NormSWDist', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent of Distance (SW)', legend='top', facet.by="Sex")
+ggsave(paste(outpath,'NormSWDistAPOESex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
 #6. NORMALIZED Time swam in SW quadrant for APOE 2/2, 3/3, and 4/4
 ggline(dfAveraged, x='Stage', y='NormSWTime', color='APOE', fill='APOE',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
@@ -439,6 +449,13 @@ myfile<-paste(outpath,'NormSWTimeAPOEstats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 #_________________________________________________________________________
+
+#6. NORMALIZED Time swam in SW quadrant for APOE 2/2, 3/3, and 4/4, separated by sex
+ggline(dfAveraged, x='Stage', y='NormSWTime', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent of Time (SW)', legend='top', facet.by="Sex")
+ggsave(paste(outpath,'NormSWTimeAPOESex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
 #7. Mean speed for APOE 2/2, 3/3, and 4/4
 ggline(dfAveraged, x='Stage', y='Mean.speed', color='APOE', fill='APOE',
@@ -494,12 +511,20 @@ postHocTable[5,]=c('APOE4/4-APOE3/3', tukey.test$APOE[3,1], tukey.test$APOE[3,2]
 myfile<-paste(outpath,'MeanSpeedAPOEDay1stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#7. Mean speed for APOE 2/2, 3/3, and 4/4, separated by sex
+ggline(dfAveraged, x='Stage', y='Mean.speed', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Mean Speed (m/s)', legend='top', facet.by="Sex")
+ggsave(paste(outpath,'MeanSpeedAPOESex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
 #_________________________________________________________________________
-#8. SW Time swam adjusted for Mean Speed
+#8. Normalized SW Time swam adjusted for Mean Speed
 ggline(dfAveraged, x='Stage', y='residuals', color='APOE', fill='APOE',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
-       point.size = 1.5, xlab='', ylab='Quadrant Time (SW) - Residuals', legend='top')
-ggsave(paste(outpath,'SWTimeAdjustAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       point.size = 1.5, xlab='', ylab='Percent Quadrant Time (SW) - Residuals', legend='top')
+ggsave(paste(outpath,'NormSWTimeAdjustAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
 data.lm <- lm(residuals ~ APOE, data = dfAveraged)
@@ -550,6 +575,14 @@ postHocTable[5,]=c('APOE4/4-APOE3/3', tukey.test$APOE[3,1], tukey.test$APOE[3,2]
 myfile<-paste(outpath,'SWTimeAdjustAPOEDay5stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#8. Normalized SW Time swam adjusted for Mean Speed, separated by sex
+ggline(dfAveraged, x='Stage', y='residuals', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent Quadrant Time (SW) - Residuals', legend='top', facet.by="Sex")
+ggsave(paste(outpath,'NormSWTimeAdjustAPOESex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS
 #9. Barplot with Standard Error of DISTANCE in Quadrant for Genotype 2/2-- PROBE TRIAL
@@ -816,14 +849,14 @@ myMean<-aggregate(dfSW$Distance, by=list(Day=dfSW$Day, Genotype=dfSW$Genotype), 
 mySD<-aggregate(dfSW$Distance, by=list(Day=dfSW$Day, Genotype=dfSW$Genotype), sd)
 myMean<-do.call(data.frame, myMean)
 mySD<-do.call(data.frame, mySD)
-myMean$SE<-mySD$x/sqrt(11)
+myMean$SE<-mySD$x/sqrt(58)
 
 tabbedMeans<-tapply(myMean$x, list(myMean$Day, myMean$Genotype), function(x) c(x=x))
 tabbedSE<-tapply(myMean$SE, list(myMean$Day, myMean$Genotype), function(x) c(x=x))
 tabbedMeans<-tabbedMeans[6:7,1:3]
 tabbedSE<-tabbedSE[6:7,1:3]
 
-pdf(file='ProbeDistInQuadSW.pdf')
+pdf(file='ProbeSWDistAPOE.pdf')
 barCenters<-barplot(height=tabbedMeans,
                     density=c(100,5,15,30),
                     angle=c(0,0,45,90),
@@ -899,3 +932,139 @@ write.table(mytTable4, file=myfile, col.names = FALSE, sep = "," , row.names = F
 write.table(postHocTable2, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 write.table(postHocTable3, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 write.table(postHocTable4, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Barplot with Standard Error of Normalized Distance in Quadrant SW in Probe Day 1 for All Genotypes-- PROBE TRIAL
+myMean<-aggregate(dfSWp1$DistNorm, by=list(Genotype=dfSWp1$Genotype), mean)
+mySD<-aggregate(dfSWp1$DistNorm, by=list(Genotype=dfSWp1$Genotype), sd)
+myMean<-do.call(data.frame, myMean)
+mySD<-do.call(data.frame, mySD)
+myMean$SE<-mySD$x/sqrt(29)
+
+tabbedMeans<-tapply(myMean$x, list(myMean$Genotype), function(x) c(x=x))
+tabbedSE<-tapply(myMean$SE, list(myMean$Genotype), function(x) c(x=x))
+tabbedMeans<-tabbedMeans[6,1:3]
+tabbedSE<-tabbedSE[6,1:3]
+
+pdf(file='ProbeNormSWDistP1APOE.pdf')
+barCenters<-barplot(height=tabbedMeans,
+                    density=c(100,5,15,30),
+                    angle=c(0,0,45,90),
+                    ylim=c(0,.8),
+                    col='blueviolet',
+                    beside=TRUE, las=1,
+                    cex.names=0.75,
+                    main="Percent Distance in Quadrant SW Probe 1",
+                    ylab="Percent Distance in SW",
+                    border="black", axes=TRUE,
+                    legend.text=TRUE,
+                    args.legend=list(title="Genotype",
+                                     x="topright",
+                                     cex=.7))
+segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+         tabbedMeans + tabbedSE *2, lwd = 1.5)
+arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+       tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
+       code = 3, length = 0.05)
+dev.off() #Close pdf file
+
+#Barplot with Standard Error of Normalized Distance in Quadrant SW in Probe Day 2 for All Genotypes-- PROBE TRIAL
+myMean<-aggregate(dfSWp2$DistNorm, by=list(Genotype=dfSWp2$Genotype), mean)
+mySD<-aggregate(dfSWp2$DistNorm, by=list(Genotype=dfSWp2$Genotype), sd)
+myMean<-do.call(data.frame, myMean)
+mySD<-do.call(data.frame, mySD)
+myMean$SE<-mySD$x/sqrt(29)
+
+tabbedMeans<-tapply(myMean$x, list(myMean$Genotype), function(x) c(x=x))
+tabbedSE<-tapply(myMean$SE, list(myMean$Genotype), function(x) c(x=x))
+tabbedMeans<-tabbedMeans[7,1:3]
+tabbedSE<-tabbedSE[7,1:3]
+
+pdf(file='ProbeNormSWDistP2APOE.pdf')
+barCenters<-barplot(height=tabbedMeans,
+                    density=c(100,5,15,30),
+                    angle=c(0,0,45,90),
+                    ylim=c(0,.8),
+                    col='blueviolet',
+                    beside=TRUE, las=1,
+                    cex.names=0.75,
+                    main="Percent Distance in Quadrant SW Probe 2",
+                    ylab="Percent Distance in SW",
+                    border="black", axes=TRUE,
+                    legend.text=TRUE,
+                    args.legend=list(title="Genotype",
+                                     x="topright",
+                                     cex=.7))
+segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+         tabbedMeans + tabbedSE *2, lwd = 1.5)
+arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+       tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
+       code = 3, length = 0.05)
+dev.off() #Close pdf file
+
+#Barplot with Standard Error of Normalized Distance in Quadrant SW in Probe Day 1 for All Genotypes-- PROBE TRIAL, separated by sex
+myMean<-aggregate(dfSWp1$DistNorm, by=list(Sex=dfSWp1$Sex, Genotype=dfSWp1$Genotype), mean)
+mySD<-aggregate(dfSWp1$DistNorm, by=list(Sex=dfSWp1$Sex, Genotype=dfSWp1$Genotype), sd)
+myMean<-do.call(data.frame, myMean)
+mySD<-do.call(data.frame, mySD)
+myMean$SE<-mySD$x/sqrt(29)
+
+tabbedMeans<-tapply(myMean$x, list(myMean$Sex, myMean$Genotype), function(x) c(x=x))
+tabbedSE<-tapply(myMean$SE, list(myMean$Sex, myMean$Genotype), function(x) c(x=x))
+tabbedMeans<-tabbedMeans[1:2,1:3]
+tabbedSE<-tabbedSE[1:2,1:3]
+
+pdf(file='ProbeNormSWDistP1APOESex.pdf')
+barCenters<-barplot(height=tabbedMeans,
+                    density=c(100,5,15,30),
+                    angle=c(0,0,45,90),
+                    ylim=c(0,.8),
+                    col='blueviolet',
+                    beside=TRUE, las=1,
+                    cex.names=0.75,
+                    main="Percent Distance in Quadrant SW Probe 1",
+                    ylab="Percent Distance in SW",
+                    border="black", axes=TRUE,
+                    legend.text=TRUE,
+                    args.legend=list(title="Sex",
+                                     x="topright",
+                                     cex=.7))
+segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+         tabbedMeans + tabbedSE *2, lwd = 1.5)
+arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+       tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
+       code = 3, length = 0.05)
+dev.off() #Close pdf file
+
+#Barplot with Standard Error of Normalized Distance in Quadrant SW in Probe Day 2 for All Genotypes-- PROBE TRIAL, separated by sex
+myMean<-aggregate(dfSWp2$DistNorm, by=list(Sex=dfSWp2$Sex, Genotype=dfSWp2$Genotype), mean)
+mySD<-aggregate(dfSWp2$DistNorm, by=list(Sex=dfSWp2$Sex, Genotype=dfSWp2$Genotype), sd)
+myMean<-do.call(data.frame, myMean)
+mySD<-do.call(data.frame, mySD)
+myMean$SE<-mySD$x/sqrt(29)
+
+tabbedMeans<-tapply(myMean$x, list(myMean$Sex, myMean$Genotype), function(x) c(x=x))
+tabbedSE<-tapply(myMean$SE, list(myMean$Sex, myMean$Genotype), function(x) c(x=x))
+tabbedMeans<-tabbedMeans[1:2,1:3]
+tabbedSE<-tabbedSE[1:2,1:3]
+
+pdf(file='ProbeNormSWDistP2APOESex.pdf')
+barCenters<-barplot(height=tabbedMeans,
+                    density=c(100,5,15,30),
+                    angle=c(0,0,45,90),
+                    ylim=c(0,.8),
+                    col='blueviolet',
+                    beside=TRUE, las=1,
+                    cex.names=0.75,
+                    main="Percent Distance in Quadrant SW Probe 2",
+                    ylab="Percent Distance in SW",
+                    border="black", axes=TRUE,
+                    legend.text=TRUE,
+                    args.legend=list(title="Sex",
+                                     x="topright",
+                                     cex=.7))
+segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+         tabbedMeans + tabbedSE *2, lwd = 1.5)
+arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+       tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
+       code = 3, length = 0.05)
+dev.off() #Close pdf file
