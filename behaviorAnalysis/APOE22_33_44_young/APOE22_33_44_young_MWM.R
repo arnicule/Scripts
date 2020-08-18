@@ -62,18 +62,18 @@ dfProbe$SE.Time.Norm<-dfProbe$SE.time/dfProbe$TimeTot
 dfProbe$SW.Time.Norm<-dfProbe$SW.time/dfProbe$TimeTot
 
 #This section adds separate information by quadrants and adds quadrant labels
-dfNW<-data.frame(dfProbe$Animal, dfProbe$APOE, dfProbe$Stage, dfProbe$Sex, dfProbe$NW.time, dfProbe$NW.distance, dfProbe$NW.Time.Norm, dfProbe$NW.Dist.Norm)
+dfNW<-data.frame(dfProbe$Animal, dfProbe$APOE, dfProbe$Stage, dfProbe$Sex, dfProbe$Winding, dfProbe$NW.time, dfProbe$NW.distance, dfProbe$NW.Time.Norm, dfProbe$NW.Dist.Norm)
 dfNW<-cbind(dfNW, quadrant='NW')
-colnames(dfNW)<-c('Animal', 'Genotype', 'Day', 'Sex', 'Time', 'Distance', 'TimeNorm', 'DistNorm', 'Quadrant')
-dfSW<-data.frame(dfProbe$Animal, dfProbe$APOE, dfProbe$Stage, dfProbe$Sex, dfProbe$SW.time, dfProbe$SW.distance, dfProbe$SW.Time.Norm, dfProbe$SW.Dist.Norm)
+colnames(dfNW)<-c('Animal', 'Genotype', 'Day', 'Sex', 'Winding', 'Time', 'Distance', 'TimeNorm', 'DistNorm', 'Quadrant')
+dfSW<-data.frame(dfProbe$Animal, dfProbe$APOE, dfProbe$Stage, dfProbe$Sex, dfProbe$Winding, dfProbe$SW.time, dfProbe$SW.distance, dfProbe$SW.Time.Norm, dfProbe$SW.Dist.Norm)
 dfSW<-cbind(dfSW, quadrant='SW')
-colnames(dfSW)<-c('Animal', 'Genotype', 'Day', 'Sex', 'Time', 'Distance', 'TimeNorm', 'DistNorm', 'Quadrant')
-dfNE<-data.frame(dfProbe$Animal, dfProbe$APOE, dfProbe$Stage, dfProbe$Sex, dfProbe$NE.time, dfProbe$NE.distance, dfProbe$NE.Time.Norm, dfProbe$NE.Dist.Norm)
+colnames(dfSW)<-c('Animal', 'Genotype', 'Day', 'Sex', 'Winding', 'Time', 'Distance', 'TimeNorm', 'DistNorm', 'Quadrant')
+dfNE<-data.frame(dfProbe$Animal, dfProbe$APOE, dfProbe$Stage, dfProbe$Sex, dfProbe$Winding, dfProbe$NE.time, dfProbe$NE.distance, dfProbe$NE.Time.Norm, dfProbe$NE.Dist.Norm)
 dfNE<-cbind(dfNE, quadrant='NE')
-colnames(dfNE)<-c('Animal', 'Genotype', 'Day', 'Sex', 'Time', 'Distance', 'TimeNorm', 'DistNorm', 'Quadrant')
-dfSE<-data.frame(dfProbe$Animal, dfProbe$APOE, dfProbe$Stage, dfProbe$Sex, dfProbe$SE.time, dfProbe$SE.distance, dfProbe$SE.Time.Norm, dfProbe$SE.Dist.Norm)
+colnames(dfNE)<-c('Animal', 'Genotype', 'Day', 'Sex', 'Winding', 'Time', 'Distance', 'TimeNorm', 'DistNorm', 'Quadrant')
+dfSE<-data.frame(dfProbe$Animal, dfProbe$APOE, dfProbe$Stage, dfProbe$Sex, dfProbe$Winding, dfProbe$SE.time, dfProbe$SE.distance, dfProbe$SE.Time.Norm, dfProbe$SE.Dist.Norm)
 dfSE<-cbind(dfSE, quadrant='SE')
-colnames(dfSE)<-c('Animal', 'Genotype', 'Day', 'Sex', 'Time', 'Distance', 'TimeNorm', 'DistNorm', 'Quadrant')
+colnames(dfSE)<-c('Animal', 'Genotype', 'Day', 'Sex', 'Winding', 'Time', 'Distance', 'TimeNorm', 'DistNorm', 'Quadrant')
 
 dfSWp1<-subset(dfSW, (Day=='Probe_D5'))
 dfSWp2<-subset(dfSW, (Day=='Probe_D8'))
@@ -581,6 +581,20 @@ ggline(dfAveraged, x='Stage', y='residuals', color='APOE', fill='APOE',
        error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
        point.size = 1.5, xlab='', ylab='Percent Quadrant Time (SW) - Residuals', legend='top', facet.by="Sex")
 ggsave(paste(outpath,'NormSWTimeAdjustAPOESex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+#8. Winding Numbers for each genotype
+ggline(dfAveraged, x='Stage', y='Winding', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Winding Numbers', legend='top')
+ggsave(paste(outpath,'WindingAPOE.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+#8. Winding Numbers for each genotype, separated by sex
+ggline(dfAveraged, x='Stage', y='Winding', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Winding Numbers', legend='top', facet.by='Sex')
+ggsave(paste(outpath,'WindingAPOEsex.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
 #_______________________________________________________________________________

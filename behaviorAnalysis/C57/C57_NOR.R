@@ -30,6 +30,16 @@ colnames(dfRIT3)<-c('AnimalID', 'Genotype', 'Sex', 'AgeGroup', 'Recognition.Inde
 
 dfAll=rbind(dfLP, dfRIT2, dfRIT3)
 
+#Plot mean +SSE separated by sex
+ggerrorplot(dfAll, x='Trial', y='Recognition.Index', color='AgeGroup', fill='AgeGroup',
+            desc_stat='mean_se', palette=c('blueviolet', 'chartreuse1'), size=1,
+            error.plot='errorbar', add='mean', point.size=1.5, xlab='', ylab='Recognition Index',
+            legend='top', position=position_dodge(0.2),facet.by='Sex')
+
+ggsave(paste(outpath,'NORlineC57sex.pdf', sep=''), plot=last_plot(), device='pdf', scale=1, width=5,
+       height=5, units=c("in"), dpi=300)
+
+
 #Plot mean +SSE
 ggerrorplot(dfAll, x='Trial', y='Recognition.Index', color='AgeGroup', fill='AgeGroup',
             desc_stat='mean_se', palette=c('blueviolet', 'chartreuse1'), size=1,

@@ -61,18 +61,18 @@ dfProbe$SE.Time.Norm<-dfProbe$SE.Time/dfProbe$TimeTot
 dfProbe$SW.Time.Norm<-dfProbe$SW.Time/dfProbe$TimeTot
 
 #This section adds separates information by quadrants and adds quadrant labels
-dfNW<-data.frame(dfProbe$Animal, dfProbe$genotype, dfProbe$age_group, dfProbe$Day, dfProbe$NW.Time, dfProbe$NW.Distance, dfProbe$NW.Time.Norm, dfProbe$NW.Dist.Norm)
+dfNW<-data.frame(dfProbe$Animal, dfProbe$genotype, dfProbe$age_group, dfProbe$sex, dfProbe$Day, dfProbe$NW.Time, dfProbe$NW.Distance, dfProbe$NW.Time.Norm, dfProbe$NW.Dist.Norm)
 dfNW<-cbind(dfNW,quadrant='NW')
-colnames(dfNW)<-c('Animal', 'genotype', 'Age','Day', 'Time','Distance','TimeNorm', 'DistNorm','Quadrant')
-dfSW<-data.frame(dfProbe$Animal, dfProbe$genotype, dfProbe$age_group, dfProbe$Day, dfProbe$SW.Time, dfProbe$SW.Distance, dfProbe$SW.Time.Norm, dfProbe$SW.Dist.Norm)
+colnames(dfNW)<-c('Animal', 'genotype', 'Age', 'Sex', 'Day', 'Time','Distance','TimeNorm', 'DistNorm','Quadrant')
+dfSW<-data.frame(dfProbe$Animal, dfProbe$genotype, dfProbe$age_group, dfProbe$sex, dfProbe$Day, dfProbe$SW.Time, dfProbe$SW.Distance, dfProbe$SW.Time.Norm, dfProbe$SW.Dist.Norm)
 dfSW<-cbind(dfSW,quadrant='SW')
-colnames(dfSW)<-c('Animal', 'genotype', 'Age','Day', 'Time','Distance','TimeNorm', 'DistNorm','Quadrant')
-dfNE<-data.frame(dfProbe$Animal, dfProbe$genotype, dfProbe$age_group, dfProbe$Day, dfProbe$NE.Time, dfProbe$NE.Distance, dfProbe$NE.Time.Norm, dfProbe$NE.Dist.Norm)
+colnames(dfSW)<-c('Animal', 'genotype', 'Age', 'Sex', 'Day', 'Time','Distance','TimeNorm', 'DistNorm','Quadrant')
+dfNE<-data.frame(dfProbe$Animal, dfProbe$genotype, dfProbe$age_group, dfProbe$sex, dfProbe$Day, dfProbe$NE.Time, dfProbe$NE.Distance, dfProbe$NE.Time.Norm, dfProbe$NE.Dist.Norm)
 dfNE<-cbind(dfNE,quadrant='NE')
-colnames(dfNE)<-c('Animal', 'genotype', 'Age','Day', 'Time','Distance','TimeNorm', 'DistNorm','Quadrant')
-dfSE<-data.frame(dfProbe$Animal, dfProbe$genotype, dfProbe$age_group, dfProbe$Day, dfProbe$SE.Time, dfProbe$SE.Distance, dfProbe$SE.Time.Norm, dfProbe$SE.Dist.Norm)
+colnames(dfNE)<-c('Animal', 'genotype', 'Age', 'Sex', 'Day', 'Time','Distance','TimeNorm', 'DistNorm','Quadrant')
+dfSE<-data.frame(dfProbe$Animal, dfProbe$genotype, dfProbe$age_group, dfProbe$sex, dfProbe$Day, dfProbe$SE.Time, dfProbe$SE.Distance, dfProbe$SE.Time.Norm, dfProbe$SE.Dist.Norm)
 dfSE<-cbind(dfSE,quadrant='SE')
-colnames(dfSE)<-c('Animal', 'genotype', 'Age','Day', 'Time','Distance','TimeNorm', 'DistNorm','Quadrant')
+colnames(dfSE)<-c('Animal', 'genotype', 'Age', 'Sex', 'Day', 'Time','Distance','TimeNorm', 'DistNorm','Quadrant')
 
 dfSWp1<-subset(dfSW, (Day=='ProbeTrial1'))
 dfSWp2<-subset(dfSW, (Day=='ProbeTrial2'))
@@ -86,10 +86,11 @@ dfQuadp1<-subset(dfQuad, Day=='ProbeTrial1')
 dfQuadp2<-subset(dfQuad, Day=='ProbeTrial2')
 
 #Adjust SW Time for covariate Mean Speed
-cor.test(dfAveraged$NormSWTime, dfAveraged$Average.Pool.Speed)
-lm1<-lm(NormSWTime ~ Average.Pool.Speed, data=na.omit(dfAveraged, cols="Average.Pool.Speed")) #Na.action not working!
-cor.test(lm1$residuals, dfAveraged$Average.Pool.Speed)
-dfAveraged<-cbind(dfAveraged, residuals=lm1$residuals)
+dfAveragedtemp<-dfAveraged[-c(22,23,42,61,63,121,122),]
+cor.test(dfAveragedtemp$NormSWTime, dfAveragedtemp$Average.Pool.Speed)
+lm1<-lm(NormSWTime ~ Average.Pool.Speed, data=dfAveragedtemp) #Na.action not working!
+cor.test(lm1$residuals, dfAveragedtemp$Average.Pool.Speed)
+dfAveragedtemp<-cbind(dfAveragedtemp, residuals=lm1$residuals)
 
 #__________________________________________________________________________
 #Rewrite Data frame for Stats
@@ -389,6 +390,22 @@ ggline(dfAveraged, x='Day', y='Average.Pool.Speed', color='age_group', fill='age
 ggsave(paste(outpath,'MeanSpeedC57Sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+#7. Normalized SW Time, adjusted for speed, for ages young vs old
+ggline(dfAveragedtemp, x='Day', y='residuals', color='age_group', fill='age_group',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet', 'chartreuse1'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent SW Time - Residuals', legend='top', title='NormSWTime Adjusted (C57)'
+)
+ggsave(paste(outpath,'NormSWTimeAdjustC57.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+#7. Normalized SW Time, adjusted for speed, for ages young vs old, separated by sex
+ggline(dfAveragedtemp, x='Day', y='residuals', color='age_group', fill='age_group',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet', 'chartreuse1'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent SW Time - Residuals', legend='top', title='NormSWTime Adjusted (C57)', facet.by='sex'
+)
+ggsave(paste(outpath,'NormSWTimeAdjustC57sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS
 #8. Barplot with Standard Error of DISTANCE in Quadrant for Young mice-- Probe Trial
@@ -635,22 +652,21 @@ write.table(postHocTabley, file=myfile, sep=",", row.names=F, append=TRUE, col.n
 write.table(postHocTableo, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 
 #Barplot with Standard Error of Normalized Distance in Quadrant SW for both ages in Probe 1-- PROBE TRIAL
-myMean<-aggregate(dfSWp1$DistNorm, by=list(Age=dfSWp1$Age), mean)
-mySD<-aggregate(dfSWp1$DistNorm, by=list(Age=dfSWp1$Age), sd)
+dfSWp1temp<-dfSWp1[-c(16,23),]   #Remove rows with NaN
+myMean<-aggregate(dfSWp1temp$DistNorm, by=list(Age=dfSWp1temp$Age), mean)
+mySD<-aggregate(dfSWp1temp$DistNorm, by=list(Age=dfSWp1temp$Age), sd)
 myMean<-do.call(data.frame, myMean)
 mySD<-do.call(data.frame, mySD)
-myMean$SE<-mySD$x/sqrt(30)
+myMean$SE<-mySD$x/sqrt(28)
 
 tabbedMeans<-tapply(myMean$x, list(myMean$Age), function(x) c(x=x))
 tabbedSE<-tapply(myMean$SE, list(myMean$Age), function(x) c(x=x))
-tabbedMeans<-tabbedMeans[6,1:2]
-tabbedSE<-tabbedSE[6,1:2]
 
 pdf(file='ProbeNormSWDistP1C57.pdf')
 barCenters<-barplot(height=tabbedMeans,
                     density=c(100,5,15,30),
                     angle=c(0,0,45,90),
-                    ylim=c(0,6),
+                    ylim=c(0,0.8),
                     col='blueviolet',
                     beside=TRUE, las=1,
                     cex.names=0.75,
@@ -702,23 +718,23 @@ arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
        code = 3, length = 0.05)
 dev.off() #Close pdf file
 
-#Barplot with Standard Error of Normalized Distance in Quadrant SW for both ages in Probe 1-- PROBE TRIAL, separated by sex
-myMean<-aggregate(dfSWp1$DistNorm, by=list(Sex=dfSWp1$Sex, Age=dfSWp1$Age), mean)
-mySD<-aggregate(dfSWp1$DistNorm, by=list(Sex=dfSWp1$Sex, Age=dfSWp1$Age), sd)
+#Barplot with Standard Error of Normalized Distance in Quadrant SW for both ages in Probe 1-- PROBE TRIAL
+#separated by sex
+dfSWp1temp<-dfSWp1[-c(16,23),]   #Remove rows with NaN
+myMean<-aggregate(dfSWp1temp$DistNorm, by=list(Sex=dfSWp1temp$Sex, Age=dfSWp1temp$Age), mean)
+mySD<-aggregate(dfSWp1temp$DistNorm, by=list(Sex=dfSWp1temp$Sex, Age=dfSWp1temp$Age), sd)
 myMean<-do.call(data.frame, myMean)
 mySD<-do.call(data.frame, mySD)
-myMean$SE<-mySD$x/sqrt(30)
+myMean$SE<-mySD$x/sqrt(28)
 
 tabbedMeans<-tapply(myMean$x, list(myMean$Sex, myMean$Age), function(x) c(x=x))
 tabbedSE<-tapply(myMean$SE, list(myMean$Sex, myMean$Age), function(x) c(x=x))
-tabbedMeans<-tabbedMeans[6,1:2]
-tabbedSE<-tabbedSE[6,1:2]
 
 pdf(file='ProbeNormSWDistP1C57Sex.pdf')
 barCenters<-barplot(height=tabbedMeans,
                     density=c(100,5,15,30),
                     angle=c(0,0,45,90),
-                    ylim=c(0,6),
+                    ylim=c(0,0.8),
                     col='blueviolet',
                     beside=TRUE, las=1,
                     cex.names=0.75,
@@ -736,7 +752,8 @@ arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
        code = 3, length = 0.05)
 dev.off() #Close pdf file
 
-#Barplot with Standard Error of Normalized Distance in Quadrant SW for both ages in Probe 2-- PROBE TRIAL, separated by sex
+#Barplot with Standard Error of Normalized Distance in Quadrant SW for both ages in Probe 2-- PROBE TRIAL
+#separated by sex
 myMean<-aggregate(dfSWp2$DistNorm, by=list(Sex=dfSWp2$Sex, Age=dfSWp2$Age), mean)
 mySD<-aggregate(dfSWp2$DistNorm, by=list(Sex=dfSWp2$Sex, Age=dfSWp2$Age), sd)
 myMean<-do.call(data.frame, myMean)
@@ -745,8 +762,6 @@ myMean$SE<-mySD$x/sqrt(30)
 
 tabbedMeans<-tapply(myMean$x, list(myMean$Sex, myMean$Age), function(x) c(x=x))
 tabbedSE<-tapply(myMean$SE, list(myMean$Sex, myMean$Age), function(x) c(x=x))
-tabbedMeans<-tabbedMeans[7,1:2]
-tabbedSE<-tabbedSE[7,1:2]
 
 pdf(file='ProbeNormSWDistP2C57Sex.pdf')
 barCenters<-barplot(height=tabbedMeans,
