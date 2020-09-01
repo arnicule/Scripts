@@ -519,6 +519,76 @@ ggline(dfAveraged, x='Stage', y='Mean.speed', color='APOE', fill='APOE',
 ggsave(paste(outpath,'MeanSpeedAPOESex.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+tempFemales <- subset(dfAveraged, Sex %in% "F")
+tempMales <- subset(dfAveraged, Sex %in% "M")
+
+dataF.lm <- lm(Mean.speed ~ APOE, data = tempFemales)
+dataF.aov <- aov(dataF.lm)
+tukeyF.test <- TukeyHSD(dataF.aov)
+
+dataM.lm <- lm(Mean.speed ~ APOE, data = tempMales)
+dataM.aov <- aov(dataM.lm)
+tukeyM.test <- TukeyHSD(dataM.aov)
+
+testMethodF<-oneway.test(Mean.speed ~ APOE, data = tempFemales)
+testMethodM<-oneway.test(Mean.speed ~ APOE, data = tempMales)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$statistic, testMethodF$p.value, testMethodF$parameter[1], nrow(tempFemales)) #Get values from summary
+)
+
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$statistic, testMethodM$p.value, testMethodM$parameter[1], nrow(tempMales)) #Get values from summary
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTableF<-matrix(nrow=5, ncol=5)
+postHocTableF[1,]=c('', '', '', '', '')
+postHocTableF[2,]=c('Female TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableF[3,]=c('APOE3/3-APOE2/2', tukeyF.test$APOE[1,1], tukeyF.test$APOE[1,2], tukeyF.test$APOE[1,3], tukeyF.test$APOE[1,4])
+postHocTableF[4,]=c('APOE4/4-APOE2/2', tukeyF.test$APOE[2,1], tukeyF.test$APOE[2,2], tukeyF.test$APOE[2,3], tukeyF.test$APOE[2,4])
+postHocTableF[5,]=c('APOE4/4-APOE3/3', tukeyF.test$APOE[3,1], tukeyF.test$APOE[3,2], tukeyF.test$APOE[3,3], tukeyF.test$APOE[3,4])
+
+postHocTableM<-matrix(nrow=5, ncol=5)
+postHocTableM[1,]=c('', '', '', '', '')
+postHocTableM[2,]=c('Male TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableM[3,]=c('APOE3/3-APOE2/2', tukeyM.test$APOE[1,1], tukeyM.test$APOE[1,2], tukeyM.test$APOE[1,3], tukeyM.test$APOE[1,4])
+postHocTableM[4,]=c('APOE4/4-APOE2/2', tukeyM.test$APOE[2,1], tukeyM.test$APOE[2,2], tukeyM.test$APOE[2,3], tukeyM.test$APOE[2,4])
+postHocTableM[5,]=c('APOE4/4-APOE3/3', tukeyM.test$APOE[3,1], tukeyM.test$APOE[3,2], tukeyM.test$APOE[3,3], tukeyM.test$APOE[3,4])
+
+myfile<-paste(outpath,'meanSpeedAPOESexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+write.table(postHocTableF, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+write.table(postHocTableM, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+
+temp <- subset(dfAveraged, Stage %in% "Day1")
+temp <- subset(temp, Sex %in% "F")
+
+data.lm <- lm(Mean.speed ~ APOE, data = temp)
+data.aov <- aov(data.lm)
+tukey.test <- TukeyHSD(data.aov)
+
+testMethod<-oneway.test(Mean.speed ~ APOE, data = temp)
+
+mytTable<-as_tibble(
+  cbind(paste("Female", testMethod$data.name, sep=" "), testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(temp))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTableM<-matrix(nrow=5, ncol=5)
+postHocTableM[1,]=c('', '', '', '', '')
+postHocTableM[2,]=c('Female TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableM[3,]=c('APOE3/3-APOE2/2', tukey.test$APOE[1,1], tukey.test$APOE[1,2], tukey.test$APOE[1,3], tukey.test$APOE[1,4])
+postHocTableM[4,]=c('APOE4/4-APOE2/2', tukey.test$APOE[2,1], tukey.test$APOE[2,2], tukey.test$APOE[2,3], tukey.test$APOE[2,4])
+postHocTableM[5,]=c('APOE4/4-APOE3/3', tukey.test$APOE[3,1], tukey.test$APOE[3,2], tukey.test$APOE[3,3], tukey.test$APOE[3,4])
+
+myfile<-paste(outpath,'meanSpeedAPOEDay1Femalestats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTableM, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 #_________________________________________________________________________
 #8. Normalized SW Time swam adjusted for Mean Speed
 ggline(dfAveraged, x='Stage', y='residuals', color='APOE', fill='APOE',
@@ -597,8 +667,42 @@ ggline(dfAveraged, x='Stage', y='Winding', color='APOE', fill='APOE',
 ggsave(paste(outpath,'WindingAPOEsex.pdf',sep=''), plot = last_plot(), device = 'pdf',
        scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
+temp <- subset(dfAveraged, Stage %in% "Day5")
+temp <- subset(temp, Sex %in% "F")
+
+data.lm <- lm(Winding ~ APOE, data = temp)
+data.aov <- aov(data.lm)
+tukey.test <- TukeyHSD(data.aov)
+
+testMethod<-oneway.test(Winding ~ APOE, data = temp)
+
+mytTable<-as_tibble(
+  cbind(paste("Female", testMethod$data.name, sep=" "), testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(temp))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTableM<-matrix(nrow=5, ncol=5)
+postHocTableM[1,]=c('', '', '', '', '')
+postHocTableM[2,]=c('Female TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableM[3,]=c('APOE3/3-APOE2/2', tukey.test$APOE[1,1], tukey.test$APOE[1,2], tukey.test$APOE[1,3], tukey.test$APOE[1,4])
+postHocTableM[4,]=c('APOE4/4-APOE2/2', tukey.test$APOE[2,1], tukey.test$APOE[2,2], tukey.test$APOE[2,3], tukey.test$APOE[2,4])
+postHocTableM[5,]=c('APOE4/4-APOE3/3', tukey.test$APOE[3,1], tukey.test$APOE[3,2], tukey.test$APOE[3,3], tukey.test$APOE[3,4])
+
+myfile<-paste(outpath,'windingAPOEDay5Femalestats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTableM, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS
+
+#Distance in each Quadrant for APOE22 in Probes
+ggline(dfQuad2, x='Quadrant', y='Distance', color='Quadrant', fill='Quadrant',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red','orange'), size=1, 
+       point.size = 1.5, xlab='', ylab='Distance (m)', legend='top', facet.by='Day')
+ggsave(paste(outpath,'quadDistAPOE22Probe.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
 #9. Barplot with Standard Error of DISTANCE in Quadrant for Genotype 2/2-- PROBE TRIAL
 myMean<-aggregate(dfQuad2$Distance, by=list(Day=dfQuad2$Day, Quadrant=dfQuad2$Quadrant), mean)
 mySD<-aggregate(dfQuad2$Distance, by=list(Day=dfQuad2$Day, Quadrant=dfQuad2$Quadrant), sd)
@@ -688,6 +792,13 @@ write.table(mytTablep2, file=myfile, col.names = FALSE, sep = "," , row.names = 
 write.table(postHocTablep1, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 write.table(postHocTablep2, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 
+#Distance in each Quadrant for APOE33 in Probes
+ggline(dfQuad3, x='Quadrant', y='Distance', color='Quadrant', fill='Quadrant',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red','orange'), size=1, 
+       point.size = 1.5, xlab='', ylab='Distance (m)', legend='top', facet.by='Day')
+ggsave(paste(outpath,'quadDistAPOE33Probe.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
 #Barplot with Standard Error of DISTANCE in Quadrant for Genotype 3/3-- PROBE TRIAL
 myMean<-aggregate(dfQuad3$Distance, by=list(Day=dfQuad3$Day, Quadrant=dfQuad3$Quadrant), mean)
 mySD<-aggregate(dfQuad3$Distance, by=list(Day=dfQuad3$Day, Quadrant=dfQuad3$Quadrant), sd)
@@ -773,6 +884,13 @@ write.table(mytTablep2, file=myfile, col.names = FALSE, sep = "," , row.names = 
 write.table(postHocTablep1, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 write.table(postHocTablep2, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 
+#Distance in each Quadrant for APOE44 in Probes
+ggline(dfQuad4, x='Quadrant', y='Distance', color='Quadrant', fill='Quadrant',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red','orange'), size=1, 
+       point.size = 1.5, xlab='', ylab='Distance (m)', legend='top', facet.by='Day')
+ggsave(paste(outpath,'quadDistAPOE44Probe.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
 #Barplot with Standard Error of DISTANCE in Quadrant for Genotype 4/4-- PROBE TRIAL
 myMean<-aggregate(dfQuad4$Distance, by=list(Day=dfQuad4$Day, Quadrant=dfQuad4$Quadrant), mean)
 mySD<-aggregate(dfQuad4$Distance, by=list(Day=dfQuad4$Day, Quadrant=dfQuad4$Quadrant), sd)
@@ -857,6 +975,13 @@ write.table(mytTablep1, file=myfile, col.names = mycolnames , sep = "," , row.na
 write.table(mytTablep2, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
 write.table(postHocTablep1, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 write.table(postHocTablep2, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Distance in SW for all genotypes
+ggline(dfSW, x='Genotype', y='Distance', color='Genotype', fill='Genotype',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red','orange'), size=1, 
+       point.size = 1.5, xlab='', ylab='Distance (m)', legend='top', facet.by='Day')
+ggsave(paste(outpath,'SWDistAPOEProbe.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
 #Barplot with Standard Error of Distance in Quadrant SW for All Genotypes-- PROBE TRIAL
 myMean<-aggregate(dfSW$Distance, by=list(Day=dfSW$Day, Genotype=dfSW$Genotype), mean)
@@ -1074,6 +1199,526 @@ barCenters<-barplot(height=tabbedMeans,
                     border="black", axes=TRUE,
                     legend.text=TRUE,
                     args.legend=list(title="Sex",
+                                     x="topright",
+                                     cex=.7))
+segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+         tabbedMeans + tabbedSE *2, lwd = 1.5)
+arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
+       tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
+       code = 3, length = 0.05)
+dev.off() #Close pdf file
+
+#Winding Numbers in Probe Day 1 for APOE22/33/44
+ggline(dfp1, x='APOE', y='Winding', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Winding Numbers', legend='top')
+ggsave(paste(outpath,'WindingAPOEProbe1.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+data.lm <- lm(Winding ~ APOE, data = dfp1)
+data.aov <- aov(data.lm)
+tukey.test <- TukeyHSD(data.aov)
+
+testMethod<-oneway.test(Winding ~ APOE, data = dfp1)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfp1))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=5, ncol=5)
+postHocTable[1,]=c('', '', '', '', '')
+postHocTable[2,]=c('TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTable[3,]=c('APOE3/3-APOE2/2', tukey.test$APOE[1,1], tukey.test$APOE[1,2], tukey.test$APOE[1,3], tukey.test$APOE[1,4])
+postHocTable[4,]=c('APOE4/4-APOE2/2', tukey.test$APOE[2,1], tukey.test$APOE[2,2], tukey.test$APOE[2,3], tukey.test$APOE[2,4])
+postHocTable[5,]=c('APOE4/4-APOE3/3', tukey.test$APOE[3,1], tukey.test$APOE[3,2], tukey.test$APOE[3,3], tukey.test$APOE[3,4])
+
+myfile<-paste(outpath,'WindingAPOEProbe1stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Winding Numbers in Probe Day 1 for APOE22/33/44, separated by sex
+ggline(dfp1, x='APOE', y='Winding', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Winding Numbers', legend='top', facet.by='Sex')
+ggsave(paste(outpath,'WindingAPOEProbe1sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+tempFemales <- subset(dfp1, Sex %in% "F")
+tempMales <- subset(dfp1, Sex %in% "M")
+
+dataF.lm <- lm(Winding ~ APOE, data = tempFemales)
+dataF.aov <- aov(dataF.lm)
+tukeyF.test <- TukeyHSD(dataF.aov)
+
+dataM.lm <- lm(Winding ~ APOE, data = tempMales)
+dataM.aov <- aov(dataM.lm)
+tukeyM.test <- TukeyHSD(dataM.aov)
+
+testMethodF<-oneway.test(Winding ~ APOE, data = tempFemales)
+testMethodM<-oneway.test(Winding ~ APOE, data = tempMales)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$statistic, testMethodF$p.value, testMethodF$parameter[1], nrow(tempFemales)) #Get values from summary
+)
+
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$statistic, testMethodM$p.value, testMethodM$parameter[1], nrow(tempMales)) #Get values from summary
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTableF<-matrix(nrow=5, ncol=5)
+postHocTableF[1,]=c('', '', '', '', '')
+postHocTableF[2,]=c('Female TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableF[3,]=c('APOE3/3-APOE2/2', tukeyF.test$APOE[1,1], tukeyF.test$APOE[1,2], tukeyF.test$APOE[1,3], tukeyF.test$APOE[1,4])
+postHocTableF[4,]=c('APOE4/4-APOE2/2', tukeyF.test$APOE[2,1], tukeyF.test$APOE[2,2], tukeyF.test$APOE[2,3], tukeyF.test$APOE[2,4])
+postHocTableF[5,]=c('APOE4/4-APOE3/3', tukeyF.test$APOE[3,1], tukeyF.test$APOE[3,2], tukeyF.test$APOE[3,3], tukeyF.test$APOE[3,4])
+
+postHocTableM<-matrix(nrow=5, ncol=5)
+postHocTableM[1,]=c('', '', '', '', '')
+postHocTableM[2,]=c('Male TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableM[3,]=c('APOE3/3-APOE2/2', tukeyM.test$APOE[1,1], tukeyM.test$APOE[1,2], tukeyM.test$APOE[1,3], tukeyM.test$APOE[1,4])
+postHocTableM[4,]=c('APOE4/4-APOE2/2', tukeyM.test$APOE[2,1], tukeyM.test$APOE[2,2], tukeyM.test$APOE[2,3], tukeyM.test$APOE[2,4])
+postHocTableM[5,]=c('APOE4/4-APOE3/3', tukeyM.test$APOE[3,1], tukeyM.test$APOE[3,2], tukeyM.test$APOE[3,3], tukeyM.test$APOE[3,4])
+
+myfile<-paste(outpath,'windingAPOEProbe1sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+write.table(postHocTableF, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+write.table(postHocTableM, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Winding Numbers in Probe Day 2 for APOE22/33/44
+ggline(dfp2, x='APOE', y='Winding', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Winding Numbers', legend='top')
+ggsave(paste(outpath,'WindingAPOEProbe2.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+data.lm <- lm(Winding ~ APOE, data = dfp2)
+data.aov <- aov(data.lm)
+tukey.test <- TukeyHSD(data.aov)
+
+testMethod<-oneway.test(Winding ~ APOE, data = dfp2)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfp2))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=5, ncol=5)
+postHocTable[1,]=c('', '', '', '', '')
+postHocTable[2,]=c('TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTable[3,]=c('APOE3/3-APOE2/2', tukey.test$APOE[1,1], tukey.test$APOE[1,2], tukey.test$APOE[1,3], tukey.test$APOE[1,4])
+postHocTable[4,]=c('APOE4/4-APOE2/2', tukey.test$APOE[2,1], tukey.test$APOE[2,2], tukey.test$APOE[2,3], tukey.test$APOE[2,4])
+postHocTable[5,]=c('APOE4/4-APOE3/3', tukey.test$APOE[3,1], tukey.test$APOE[3,2], tukey.test$APOE[3,3], tukey.test$APOE[3,4])
+
+myfile<-paste(outpath,'WindingAPOEProbe2stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Winding Numbers in Probe Day 2 for APOE22/33/44, separated by sex
+ggline(dfp2, x='APOE', y='Winding', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Winding Numbers', legend='top', facet.by='Sex')
+ggsave(paste(outpath,'WindingAPOEProbe2sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+tempFemales <- subset(dfp2, Sex %in% "F")
+tempMales <- subset(dfp2, Sex %in% "M")
+
+dataF.lm <- lm(Winding ~ APOE, data = tempFemales)
+dataF.aov <- aov(dataF.lm)
+tukeyF.test <- TukeyHSD(dataF.aov)
+
+dataM.lm <- lm(Winding ~ APOE, data = tempMales)
+dataM.aov <- aov(dataM.lm)
+tukeyM.test <- TukeyHSD(dataM.aov)
+
+testMethodF<-oneway.test(Winding ~ APOE, data = tempFemales)
+testMethodM<-oneway.test(Winding ~ APOE, data = tempMales)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$statistic, testMethodF$p.value, testMethodF$parameter[1], nrow(tempFemales)) #Get values from summary
+)
+
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$statistic, testMethodM$p.value, testMethodM$parameter[1], nrow(tempMales)) #Get values from summary
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTableF<-matrix(nrow=5, ncol=5)
+postHocTableF[1,]=c('', '', '', '', '')
+postHocTableF[2,]=c('Female TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableF[3,]=c('APOE3/3-APOE2/2', tukeyF.test$APOE[1,1], tukeyF.test$APOE[1,2], tukeyF.test$APOE[1,3], tukeyF.test$APOE[1,4])
+postHocTableF[4,]=c('APOE4/4-APOE2/2', tukeyF.test$APOE[2,1], tukeyF.test$APOE[2,2], tukeyF.test$APOE[2,3], tukeyF.test$APOE[2,4])
+postHocTableF[5,]=c('APOE4/4-APOE3/3', tukeyF.test$APOE[3,1], tukeyF.test$APOE[3,2], tukeyF.test$APOE[3,3], tukeyF.test$APOE[3,4])
+
+postHocTableM<-matrix(nrow=5, ncol=5)
+postHocTableM[1,]=c('', '', '', '', '')
+postHocTableM[2,]=c('Male TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableM[3,]=c('APOE3/3-APOE2/2', tukeyM.test$APOE[1,1], tukeyM.test$APOE[1,2], tukeyM.test$APOE[1,3], tukeyM.test$APOE[1,4])
+postHocTableM[4,]=c('APOE4/4-APOE2/2', tukeyM.test$APOE[2,1], tukeyM.test$APOE[2,2], tukeyM.test$APOE[2,3], tukeyM.test$APOE[2,4])
+postHocTableM[5,]=c('APOE4/4-APOE3/3', tukeyM.test$APOE[3,1], tukeyM.test$APOE[3,2], tukeyM.test$APOE[3,3], tukeyM.test$APOE[3,4])
+
+myfile<-paste(outpath,'windingAPOEProbe2sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+write.table(postHocTableF, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+write.table(postHocTableM, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Total Distance in Probe Day 1 for APOE22/33/44
+ggline(dfp1, x='APOE', y='Distance', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Total Distance (m)', legend='top')
+ggsave(paste(outpath,'poolDistAPOEProbe1.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+data.lm <- lm(Distance ~ APOE, data = dfp1)
+data.aov <- aov(data.lm)
+tukey.test <- TukeyHSD(data.aov)
+
+testMethod<-oneway.test(Distance ~ APOE, data = dfp1)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfp1))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=5, ncol=5)
+postHocTable[1,]=c('', '', '', '', '')
+postHocTable[2,]=c('TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTable[3,]=c('APOE3/3-APOE2/2', tukey.test$APOE[1,1], tukey.test$APOE[1,2], tukey.test$APOE[1,3], tukey.test$APOE[1,4])
+postHocTable[4,]=c('APOE4/4-APOE2/2', tukey.test$APOE[2,1], tukey.test$APOE[2,2], tukey.test$APOE[2,3], tukey.test$APOE[2,4])
+postHocTable[5,]=c('APOE4/4-APOE3/3', tukey.test$APOE[3,1], tukey.test$APOE[3,2], tukey.test$APOE[3,3], tukey.test$APOE[3,4])
+
+myfile<-paste(outpath,'poolDistAPOEProbe1stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Total Distance in Probe Day 1 for APOE22/33/44, separated by sex
+ggline(dfp1, x='APOE', y='Distance', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Total Distance (m)', legend='top', facet.by='Sex')
+ggsave(paste(outpath,'poolDistAPOEProbe1sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+tempFemales <- subset(dfp1, Sex %in% "F")
+tempMales <- subset(dfp1, Sex %in% "M")
+
+dataF.lm <- lm(Distance ~ APOE, data = tempFemales)
+dataF.aov <- aov(dataF.lm)
+tukeyF.test <- TukeyHSD(dataF.aov)
+
+dataM.lm <- lm(Distance ~ APOE, data = tempMales)
+dataM.aov <- aov(dataM.lm)
+tukeyM.test <- TukeyHSD(dataM.aov)
+
+testMethodF<-oneway.test(Distance ~ APOE, data = tempFemales)
+testMethodM<-oneway.test(Distance ~ APOE, data = tempMales)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$statistic, testMethodF$p.value, testMethodF$parameter[1], nrow(tempFemales)) #Get values from summary
+)
+
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$statistic, testMethodM$p.value, testMethodM$parameter[1], nrow(tempMales)) #Get values from summary
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTableF<-matrix(nrow=5, ncol=5)
+postHocTableF[1,]=c('', '', '', '', '')
+postHocTableF[2,]=c('Female TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableF[3,]=c('APOE3/3-APOE2/2', tukeyF.test$APOE[1,1], tukeyF.test$APOE[1,2], tukeyF.test$APOE[1,3], tukeyF.test$APOE[1,4])
+postHocTableF[4,]=c('APOE4/4-APOE2/2', tukeyF.test$APOE[2,1], tukeyF.test$APOE[2,2], tukeyF.test$APOE[2,3], tukeyF.test$APOE[2,4])
+postHocTableF[5,]=c('APOE4/4-APOE3/3', tukeyF.test$APOE[3,1], tukeyF.test$APOE[3,2], tukeyF.test$APOE[3,3], tukeyF.test$APOE[3,4])
+
+postHocTableM<-matrix(nrow=5, ncol=5)
+postHocTableM[1,]=c('', '', '', '', '')
+postHocTableM[2,]=c('Male TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableM[3,]=c('APOE3/3-APOE2/2', tukeyM.test$APOE[1,1], tukeyM.test$APOE[1,2], tukeyM.test$APOE[1,3], tukeyM.test$APOE[1,4])
+postHocTableM[4,]=c('APOE4/4-APOE2/2', tukeyM.test$APOE[2,1], tukeyM.test$APOE[2,2], tukeyM.test$APOE[2,3], tukeyM.test$APOE[2,4])
+postHocTableM[5,]=c('APOE4/4-APOE3/3', tukeyM.test$APOE[3,1], tukeyM.test$APOE[3,2], tukeyM.test$APOE[3,3], tukeyM.test$APOE[3,4])
+
+myfile<-paste(outpath,'poolDistAPOEProbe1sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+write.table(postHocTableF, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+write.table(postHocTableM, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Total Distance in Probe Day 2 for APOE22/33/44
+ggline(dfp2, x='APOE', y='Distance', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Total Distance (m)', legend='top')
+ggsave(paste(outpath,'poolDistAPOEProbe2.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+data.lm <- lm(Distance ~ APOE, data = dfp2)
+data.aov <- aov(data.lm)
+tukey.test <- TukeyHSD(data.aov)
+
+testMethod<-oneway.test(Distance ~ APOE, data = dfp2)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfp2))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=5, ncol=5)
+postHocTable[1,]=c('', '', '', '', '')
+postHocTable[2,]=c('TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTable[3,]=c('APOE3/3-APOE2/2', tukey.test$APOE[1,1], tukey.test$APOE[1,2], tukey.test$APOE[1,3], tukey.test$APOE[1,4])
+postHocTable[4,]=c('APOE4/4-APOE2/2', tukey.test$APOE[2,1], tukey.test$APOE[2,2], tukey.test$APOE[2,3], tukey.test$APOE[2,4])
+postHocTable[5,]=c('APOE4/4-APOE3/3', tukey.test$APOE[3,1], tukey.test$APOE[3,2], tukey.test$APOE[3,3], tukey.test$APOE[3,4])
+
+myfile<-paste(outpath,'poolDistAPOEProbe2stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Total Distance in Probe Day 2 for APOE22/33/44, separated by sex
+ggline(dfp2, x='APOE', y='Distance', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Total Distance (m)', legend='top', facet.by='Sex')
+ggsave(paste(outpath,'poolDistAPOEProbe2sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+tempFemales <- subset(dfp2, Sex %in% "F")
+tempMales <- subset(dfp2, Sex %in% "M")
+
+dataF.lm <- lm(Distance ~ APOE, data = tempFemales)
+dataF.aov <- aov(dataF.lm)
+tukeyF.test <- TukeyHSD(dataF.aov)
+
+dataM.lm <- lm(Distance ~ APOE, data = tempMales)
+dataM.aov <- aov(dataM.lm)
+tukeyM.test <- TukeyHSD(dataM.aov)
+
+testMethodF<-oneway.test(Distance ~ APOE, data = tempFemales)
+testMethodM<-oneway.test(Distance ~ APOE, data = tempMales)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$statistic, testMethodF$p.value, testMethodF$parameter[1], nrow(tempFemales)) #Get values from summary
+)
+
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$statistic, testMethodM$p.value, testMethodM$parameter[1], nrow(tempMales)) #Get values from summary
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTableF<-matrix(nrow=5, ncol=5)
+postHocTableF[1,]=c('', '', '', '', '')
+postHocTableF[2,]=c('Female TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableF[3,]=c('APOE3/3-APOE2/2', tukeyF.test$APOE[1,1], tukeyF.test$APOE[1,2], tukeyF.test$APOE[1,3], tukeyF.test$APOE[1,4])
+postHocTableF[4,]=c('APOE4/4-APOE2/2', tukeyF.test$APOE[2,1], tukeyF.test$APOE[2,2], tukeyF.test$APOE[2,3], tukeyF.test$APOE[2,4])
+postHocTableF[5,]=c('APOE4/4-APOE3/3', tukeyF.test$APOE[3,1], tukeyF.test$APOE[3,2], tukeyF.test$APOE[3,3], tukeyF.test$APOE[3,4])
+
+postHocTableM<-matrix(nrow=5, ncol=5)
+postHocTableM[1,]=c('', '', '', '', '')
+postHocTableM[2,]=c('Male TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableM[3,]=c('APOE3/3-APOE2/2', tukeyM.test$APOE[1,1], tukeyM.test$APOE[1,2], tukeyM.test$APOE[1,3], tukeyM.test$APOE[1,4])
+postHocTableM[4,]=c('APOE4/4-APOE2/2', tukeyM.test$APOE[2,1], tukeyM.test$APOE[2,2], tukeyM.test$APOE[2,3], tukeyM.test$APOE[2,4])
+postHocTableM[5,]=c('APOE4/4-APOE3/3', tukeyM.test$APOE[3,1], tukeyM.test$APOE[3,2], tukeyM.test$APOE[3,3], tukeyM.test$APOE[3,4])
+
+myfile<-paste(outpath,'poolDistAPOEProbe2sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+write.table(postHocTableF, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+write.table(postHocTableM, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Normalized SW Distance in Probe Day 1 for APOE22/33/44
+ggline(dfp1, x='APOE', y='NormSWDist', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent SW Distance', legend='top')
+ggsave(paste(outpath,'NormSWDistAPOEProbe1.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+data.lm <- lm(NormSWDist ~ APOE, data = dfp1)
+data.aov <- aov(data.lm)
+tukey.test <- TukeyHSD(data.aov)
+
+testMethod<-oneway.test(NormSWDist ~ APOE, data = dfp1)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfp1))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=5, ncol=5)
+postHocTable[1,]=c('', '', '', '', '')
+postHocTable[2,]=c('TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTable[3,]=c('APOE3/3-APOE2/2', tukey.test$APOE[1,1], tukey.test$APOE[1,2], tukey.test$APOE[1,3], tukey.test$APOE[1,4])
+postHocTable[4,]=c('APOE4/4-APOE2/2', tukey.test$APOE[2,1], tukey.test$APOE[2,2], tukey.test$APOE[2,3], tukey.test$APOE[2,4])
+postHocTable[5,]=c('APOE4/4-APOE3/3', tukey.test$APOE[3,1], tukey.test$APOE[3,2], tukey.test$APOE[3,3], tukey.test$APOE[3,4])
+
+myfile<-paste(outpath,'NormSWDistAPOEProbe1stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Normalized SW Distance in Probe Day 1 for APOE22/33/44, separated by sex
+ggline(dfp1, x='APOE', y='NormSWDist', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent SW Distance', legend='top', facet.by='Sex')
+ggsave(paste(outpath,'NormSWDistAPOEProbe1sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+tempFemales <- subset(dfp1, Sex %in% "F")
+tempMales <- subset(dfp1, Sex %in% "M")
+
+dataF.lm <- lm(NormSWDist ~ APOE, data = tempFemales)
+dataF.aov <- aov(dataF.lm)
+tukeyF.test <- TukeyHSD(dataF.aov)
+
+dataM.lm <- lm(NormSWDist ~ APOE, data = tempMales)
+dataM.aov <- aov(dataM.lm)
+tukeyM.test <- TukeyHSD(dataM.aov)
+
+testMethodF<-oneway.test(NormSWDist ~ APOE, data = tempFemales)
+testMethodM<-oneway.test(NormSWDist ~ APOE, data = tempMales)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$statistic, testMethodF$p.value, testMethodF$parameter[1], nrow(tempFemales)) #Get values from summary
+)
+
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$statistic, testMethodM$p.value, testMethodM$parameter[1], nrow(tempMales)) #Get values from summary
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTableF<-matrix(nrow=5, ncol=5)
+postHocTableF[1,]=c('', '', '', '', '')
+postHocTableF[2,]=c('Female TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableF[3,]=c('APOE3/3-APOE2/2', tukeyF.test$APOE[1,1], tukeyF.test$APOE[1,2], tukeyF.test$APOE[1,3], tukeyF.test$APOE[1,4])
+postHocTableF[4,]=c('APOE4/4-APOE2/2', tukeyF.test$APOE[2,1], tukeyF.test$APOE[2,2], tukeyF.test$APOE[2,3], tukeyF.test$APOE[2,4])
+postHocTableF[5,]=c('APOE4/4-APOE3/3', tukeyF.test$APOE[3,1], tukeyF.test$APOE[3,2], tukeyF.test$APOE[3,3], tukeyF.test$APOE[3,4])
+
+postHocTableM<-matrix(nrow=5, ncol=5)
+postHocTableM[1,]=c('', '', '', '', '')
+postHocTableM[2,]=c('Male TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableM[3,]=c('APOE3/3-APOE2/2', tukeyM.test$APOE[1,1], tukeyM.test$APOE[1,2], tukeyM.test$APOE[1,3], tukeyM.test$APOE[1,4])
+postHocTableM[4,]=c('APOE4/4-APOE2/2', tukeyM.test$APOE[2,1], tukeyM.test$APOE[2,2], tukeyM.test$APOE[2,3], tukeyM.test$APOE[2,4])
+postHocTableM[5,]=c('APOE4/4-APOE3/3', tukeyM.test$APOE[3,1], tukeyM.test$APOE[3,2], tukeyM.test$APOE[3,3], tukeyM.test$APOE[3,4])
+
+myfile<-paste(outpath,'NormSWDistAPOEProbe1sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+write.table(postHocTableF, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+write.table(postHocTableM, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Normalized SW Distance in Probe Day 2 for APOE22/33/44
+ggline(dfp2, x='APOE', y='NormSWDist', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent SW Distance', legend='top')
+ggsave(paste(outpath,'NormSWDistAPOEProbe2.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+data.lm <- lm(NormSWDist ~ APOE, data = dfp2)
+data.aov <- aov(data.lm)
+tukey.test <- TukeyHSD(data.aov)
+
+testMethod<-oneway.test(NormSWDist ~ APOE, data = dfp2)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(dfp2))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTable<-matrix(nrow=5, ncol=5)
+postHocTable[1,]=c('', '', '', '', '')
+postHocTable[2,]=c('TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTable[3,]=c('APOE3/3-APOE2/2', tukey.test$APOE[1,1], tukey.test$APOE[1,2], tukey.test$APOE[1,3], tukey.test$APOE[1,4])
+postHocTable[4,]=c('APOE4/4-APOE2/2', tukey.test$APOE[2,1], tukey.test$APOE[2,2], tukey.test$APOE[2,3], tukey.test$APOE[2,4])
+postHocTable[5,]=c('APOE4/4-APOE3/3', tukey.test$APOE[3,1], tukey.test$APOE[3,2], tukey.test$APOE[3,3], tukey.test$APOE[3,4])
+
+myfile<-paste(outpath,'NormSWDistAPOEProbe2stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(postHocTable, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Normalized SW Distance in Probe Day 2 for APOE22/33/44, separated by sex
+ggline(dfp2, x='APOE', y='NormSWDist', color='APOE', fill='APOE',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent SW Distance', legend='top', facet.by='Sex')
+ggsave(paste(outpath,'NormSWDistAPOEProbe2sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+tempFemales <- subset(dfp2, Sex %in% "F")
+tempMales <- subset(dfp2, Sex %in% "M")
+
+dataF.lm <- lm(NormSWDist ~ APOE, data = tempFemales)
+dataF.aov <- aov(dataF.lm)
+tukeyF.test <- TukeyHSD(dataF.aov)
+
+dataM.lm <- lm(NormSWDist ~ APOE, data = tempMales)
+dataM.aov <- aov(dataM.lm)
+tukeyM.test <- TukeyHSD(dataM.aov)
+
+testMethodF<-oneway.test(NormSWDist ~ APOE, data = tempFemales)
+testMethodM<-oneway.test(NormSWDist ~ APOE, data = tempMales)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$statistic, testMethodF$p.value, testMethodF$parameter[1], nrow(tempFemales)) #Get values from summary
+)
+
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$statistic, testMethodM$p.value, testMethodM$parameter[1], nrow(tempMales)) #Get values from summary
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+postHocTableF<-matrix(nrow=5, ncol=5)
+postHocTableF[1,]=c('', '', '', '', '')
+postHocTableF[2,]=c('Female TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableF[3,]=c('APOE3/3-APOE2/2', tukeyF.test$APOE[1,1], tukeyF.test$APOE[1,2], tukeyF.test$APOE[1,3], tukeyF.test$APOE[1,4])
+postHocTableF[4,]=c('APOE4/4-APOE2/2', tukeyF.test$APOE[2,1], tukeyF.test$APOE[2,2], tukeyF.test$APOE[2,3], tukeyF.test$APOE[2,4])
+postHocTableF[5,]=c('APOE4/4-APOE3/3', tukeyF.test$APOE[3,1], tukeyF.test$APOE[3,2], tukeyF.test$APOE[3,3], tukeyF.test$APOE[3,4])
+
+postHocTableM<-matrix(nrow=5, ncol=5)
+postHocTableM[1,]=c('', '', '', '', '')
+postHocTableM[2,]=c('Male TukeyHSD', 'mean diff', 'CIlwr', 'CIhi', 'p-value')
+postHocTableM[3,]=c('APOE3/3-APOE2/2', tukeyM.test$APOE[1,1], tukeyM.test$APOE[1,2], tukeyM.test$APOE[1,3], tukeyM.test$APOE[1,4])
+postHocTableM[4,]=c('APOE4/4-APOE2/2', tukeyM.test$APOE[2,1], tukeyM.test$APOE[2,2], tukeyM.test$APOE[2,3], tukeyM.test$APOE[2,4])
+postHocTableM[5,]=c('APOE4/4-APOE3/3', tukeyM.test$APOE[3,1], tukeyM.test$APOE[3,2], tukeyM.test$APOE[3,3], tukeyM.test$APOE[3,4])
+
+myfile<-paste(outpath,'NormSWDistAPOEProbe2sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+write.table(postHocTableF, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+write.table(postHocTableM, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#Barplot with Standard Error of Normalized Distance in Quadrant SW in Probe Day 2 for All Genotypes-- PROBE TRIAL
+myMean<-aggregate(dfSWp2$DistNorm, by=list(Genotype=dfSWp2$Genotype), mean)
+mySD<-aggregate(dfSWp2$DistNorm, by=list(Genotype=dfSWp2$Genotype), sd)
+myMean<-do.call(data.frame, myMean)
+mySD<-do.call(data.frame, mySD)
+myMean$SE<-mySD$x/sqrt(29)
+
+tabbedMeans<-tapply(myMean$x, list(myMean$Genotype), function(x) c(x=x))
+tabbedSE<-tapply(myMean$SE, list(myMean$Genotype), function(x) c(x=x))
+tabbedMeans<-tabbedMeans[7,1:3]
+tabbedSE<-tabbedSE[7,1:3]
+
+pdf(file='ProbeNormSWDistP2APOE.pdf')
+barCenters<-barplot(height=tabbedMeans,
+                    density=c(100,5,15,30),
+                    angle=c(0,0,45,90),
+                    ylim=c(0,.8),
+                    col='blueviolet',
+                    beside=TRUE, las=1,
+                    cex.names=0.75,
+                    main="Percent Distance in Quadrant SW Probe 2",
+                    ylab="Percent Distance in SW",
+                    border="black", axes=TRUE,
+                    legend.text=TRUE,
+                    args.legend=list(title="Genotype",
                                      x="topright",
                                      cex=.7))
 segments(barCenters, tabbedMeans - tabbedSE * 2, barCenters,

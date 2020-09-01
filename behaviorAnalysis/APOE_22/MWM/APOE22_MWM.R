@@ -140,6 +140,24 @@ ggline(dfAveraged, x='Stage', y='Duration', color='Age', fill='Age',
 ggsave(paste(outpath,'poolTimeAPOE22Sex.pdf',sep=''), plot = last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
 
+temp <- subset(dfAveraged, Stage %in% "Day3")
+temp <- subset(temp, Sex %in% "F")
+
+data.lm <- lm(Duration ~ Age, data = temp)
+data.aov <- aov(data.lm)
+tukey.test <- TukeyHSD(data.aov)
+
+testMethod<-oneway.test(Duration ~ Age, data = temp)
+
+mytTable<-as_tibble(
+  cbind(paste("Female", testMethod$data.name, sep=" "), testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(temp))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'poolTimeAPOE22Day3Femalestats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
 #2. Distance to Platform over acquisition day for APOE 2/2, young vs old
 ggline(dfAveraged, x='Stage', y='Distance', color='Age', fill='Age',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet', 'chartreuse1'), size=1,
@@ -158,6 +176,20 @@ mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estima
 
 myfile<-paste(outpath,'poolDistAPOE22stats.csv')
 write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+temp <- subset(dfAveraged, Stage %in% "Day5")
+
+testMethod<-t.test(Distance ~ Age, data = temp)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfAveraged))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistAPOE22Day5stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 #__________________________________________________________________
 
 #2. Distance to Platform over acquisition day for APOE 2/2, young vs old, separated by sex
@@ -166,6 +198,42 @@ ggline(dfAveraged, x='Stage', y='Distance', color='Age', fill='Age',
        point.size=1.5, xlab='', ylab='Distance to Platform (m)', legend='top', facet.by="Sex")
 ggsave(paste(outpath,'poolDistAPOE22Sex.pdf',sep=''), plot = last_plot(), device='pdf',
        scale=1, width=5, height=5, unit=c("in"), dpi=300)
+
+temp <- subset(dfAveraged, Stage %in% "Day3")
+temp <- subset(temp, Sex %in% "F")
+
+data.lm <- lm(Distance ~ Age, data = temp)
+data.aov <- aov(data.lm)
+tukey.test <- TukeyHSD(data.aov)
+
+testMethod<-oneway.test(Distance ~ Age, data = temp)
+
+mytTable<-as_tibble(
+  cbind(paste("Female", testMethod$data.name, sep=" "), testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(temp))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistAPOE22Day3Femalestats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+temp <- subset(dfAveraged, Stage %in% "Day5")
+temp <- subset(temp, Sex %in% "M")
+
+data.lm <- lm(Distance ~ Age, data = temp)
+data.aov <- aov(data.lm)
+tukey.test <- TukeyHSD(data.aov)
+
+testMethod<-oneway.test(Distance ~ Age, data = temp)
+
+mytTable<-as_tibble(
+  cbind(paste("Male", testMethod$data.name, sep=" "), testMethod$statistic, testMethod$p.value, testMethod$parameter[1], nrow(temp))
+)
+
+mycolnames<-c('contrast', 'statistic', 'p.value', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistAPOE22Day5Malestats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
 
 #3. NORMALIZED distance swam in SW quadrant for APOE 2/2, young vs old
 ggline(dfAveraged, x='Stage', y='NormSWDist', color='Age', fill='Age',
@@ -291,6 +359,13 @@ ggsave(paste(outpath,'NormSWTimeAdjustAPOE22Sex.pdf',sep=''), plot = last_plot()
 
 #_______________________________________________________________________________
 #THE REST OF THE SCRIPT MAKES PATTERNED BAR PLOTS FOR PROBE TRIALS
+#5. Distance in each Quadrant for young mice in Probes
+ggline(dfQuady, x='Quadrant', y='Distance', color='Quadrant', fill='Quadrant',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red','orange'), size=1, 
+       point.size = 1.5, xlab='', ylab='Quadrant Distance (m)', legend='top', facet.by="Day")
+ggsave(paste(outpath,'quadDistAPOE22YoungProbe.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
 #Barplot with Standard Error of DISTANCE in Quadrant for age young-- PROBE TRIAL
 myMean<-aggregate(dfQuady$Distance, by=list(Day=dfQuady$Day, Quadrant=dfQuady$Quadrant), mean)
 mySD<-aggregate(dfQuady$Distance, by=list(Day=dfQuady$Day, Quadrant=dfQuady$Quadrant), sd)
@@ -376,6 +451,13 @@ write.table(mytTablep2, file=myfile, col.names = FALSE, sep = "," , row.names = 
 write.table(postHocTablep1, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 write.table(postHocTablep2, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 
+#5. Distance in each Quadrant for old mice in Probes
+ggline(dfQuado, x='Quadrant', y='Distance', color='Quadrant', fill='Quadrant',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1','red','orange'), size=1, 
+       point.size = 1.5, xlab='', ylab='Quadrant Distance (m)', legend='top', facet.by="Day")
+ggsave(paste(outpath,'quadDistAPOE22OldProbe.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
 #Barplot with Standard Error of DISTANCE in Quadrant for age old-- PROBE TRIAL
 myMean<-aggregate(dfQuado$Distance, by=list(Day=dfQuado$Day, Quadrant=dfQuado$Quadrant), mean)
 mySD<-aggregate(dfQuado$Distance, by=list(Day=dfQuado$Day, Quadrant=dfQuado$Quadrant), sd)
@@ -460,6 +542,13 @@ write.table(mytTablep1, file=myfile, col.names = mycolnames , sep = "," , row.na
 write.table(mytTablep2, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
 write.table(postHocTablep1, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 write.table(postHocTablep2, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
+
+#5. SW Distance for all ages in Probes
+ggline(dfSW, x='Age', y='Distance', color='Age', fill='Age',
+       error.plot='errorbar', add='mean_se',palette = c('blueviolet','chartreuse1'), size=1, 
+       point.size = 1.5, xlab='', ylab='SW Quadrant Distance (m)', legend='top', facet.by="Day")
+ggsave(paste(outpath,'SWDistAPOE22Probe.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
 
 #Barplot with Standard Error of Distance in Quadrant SW for All ages-- PROBE TRIAL
 myMean<-aggregate(dfSW$Distance, by=list(Day=dfSW$Day, Age=dfSW$Age), mean)
@@ -669,3 +758,191 @@ arrows(barCenters, tabbedMeans - tabbedSE * 2, barCenters,
        tabbedMeans + tabbedSE * 2, lwd = 1.5, angle = 90,
        code = 3, length = 0.05)
 dev.off() #Close pdf file
+
+#Total Distance in Probe Day 1 for APOE22
+ggline(dfp1, x='Age', y='Distance', color='Age', fill='Age',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Total Distance (m)', legend='top')
+ggsave(paste(outpath,'poolDistAPOE22Probe1.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+testMethod<-t.test(Distance ~ Age, data = dfp1)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfp1))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistAPOE22Probe1stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+#Total Distance in Probe Day 1 for APOE22, separated by sex
+ggline(dfp1, x='Age', y='Distance', color='Age', fill='Age',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Total Distance (m)', legend='top', facet.by='Sex')
+ggsave(paste(outpath,'poolDistAPOE22Probe1sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+tempF <- subset(dfp1, Sex %in% "F")
+tempM <- subset(dfp1, Sex %in% "M")
+
+testMethodF<-t.test(Distance ~ Age, data = tempF)
+testMethodM<-t.test(Distance ~ Age, data = tempM)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$estimate[1], testMethodF$estimate[2], testMethodF$statistic, testMethodF$p.value,  
+        testMethodF$conf.int[1], testMethodF$conf.int[2] , testMethodF$parameter, nrow(tempF))
+)
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$estimate[1], testMethodM$estimate[2], testMethodM$statistic, testMethodM$p.value,  
+        testMethodM$conf.int[1], testMethodM$conf.int[2] , testMethodM$parameter, nrow(tempM))
+)
+
+mycolnames<-c('contrast', names(testMethodF$estimate)[1], names(testMethodF$estimate)[2], names(testMethodF$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistAPOE22Probe1Sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+
+#Total Distance in Probe Day 2 for APOE22
+ggline(dfp2, x='Age', y='Distance', color='Age', fill='Age',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Total Distance (m)', legend='top')
+ggsave(paste(outpath,'poolDistAPOE22Probe2.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+testMethod<-t.test(Distance ~ Age, data = dfp2)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfp2))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistAPOE22Probe2stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+#Total Distance in Probe Day 2 for APOE22, separated by sex
+ggline(dfp2, x='Age', y='Distance', color='Age', fill='Age',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Total Distance (m)', legend='top', facet.by='Sex')
+ggsave(paste(outpath,'poolDistAPOE22Probe2sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+tempF <- subset(dfp2, Sex %in% "F")
+tempM <- subset(dfp2, Sex %in% "M")
+
+testMethodF<-t.test(Distance ~ Age, data = tempF)
+testMethodM<-t.test(Distance ~ Age, data = tempM)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$estimate[1], testMethodF$estimate[2], testMethodF$statistic, testMethodF$p.value,  
+        testMethodF$conf.int[1], testMethodF$conf.int[2] , testMethodF$parameter, nrow(tempF))
+)
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$estimate[1], testMethodM$estimate[2], testMethodM$statistic, testMethodM$p.value,  
+        testMethodM$conf.int[1], testMethodM$conf.int[2] , testMethodM$parameter, nrow(tempM))
+)
+
+mycolnames<-c('contrast', names(testMethodF$estimate)[1], names(testMethodF$estimate)[2], names(testMethodF$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'poolDistAPOE22Probe2Sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+
+#Normalized SW Distance in Probe Day 1 for APOE22
+ggline(dfp1, x='Age', y='NormDist', color='Age', fill='Age',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent SW Distance', legend='top')
+ggsave(paste(outpath,'NormSWDistAPOE22Probe1.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+testMethod<-t.test(NormDist ~ Age, data = dfp1)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfp1))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'NormSWDistAPOE22Probe1stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+#Normalized SW Distance in Probe Day 1 for APOE22, separated by sex
+ggline(dfp1, x='Age', y='NormDist', color='Age', fill='Age',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent SW Distance', legend='top', facet.by='Sex')
+ggsave(paste(outpath,'NormSWDistAPOE22Probe1sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+tempF <- subset(dfp1, Sex %in% "F")
+tempM <- subset(dfp1, Sex %in% "M")
+
+testMethodF<-t.test(NormDist ~ Age, data = tempF)
+testMethodM<-t.test(NormDist ~ Age, data = tempM)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$estimate[1], testMethodF$estimate[2], testMethodF$statistic, testMethodF$p.value,  
+        testMethodF$conf.int[1], testMethodF$conf.int[2] , testMethodF$parameter, nrow(tempF))
+)
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$estimate[1], testMethodM$estimate[2], testMethodM$statistic, testMethodM$p.value,  
+        testMethodM$conf.int[1], testMethodM$conf.int[2] , testMethodM$parameter, nrow(tempM))
+)
+
+mycolnames<-c('contrast', names(testMethodF$estimate)[1], names(testMethodF$estimate)[2], names(testMethodF$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'NormSWDistAPOE22Probe1Sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
+
+#Normalized SW Distance in Probe Day 2 for APOE22
+ggline(dfp2, x='Age', y='NormDist', color='Age', fill='Age',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent SW Distance', legend='top')
+ggsave(paste(outpath,'NormSWDistAPOE22Probe2.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+testMethod<-t.test(NormDist ~ Age, data = dfp2)
+
+mytTable<-as_tibble(
+  cbind(testMethod$data.name, testMethod$estimate[1], testMethod$estimate[2], testMethod$statistic, testMethod$p.value,  
+        testMethod$conf.int[1], testMethod$conf.int[2] , testMethod$parameter, nrow(dfp2))
+)
+
+mycolnames<-c('contrast', names(testMethod$estimate)[1], names(testMethod$estimate)[2], names(testMethod$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'NormSWDisttAPOE22Probe2stats.csv')
+write.table(mytTable, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+
+#Normalized SW Distance in Probe Day 2 for APOE22, separated by sex
+ggline(dfp2, x='Age', y='NormDist', color='Age', fill='Age',
+       error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red'), size=1, 
+       point.size = 1.5, xlab='', ylab='Percent SW Distance', legend='top', facet.by='Sex')
+ggsave(paste(outpath,'NormSWDistAPOE22Probe2sex.pdf',sep=''), plot = last_plot(), device = 'pdf',
+       scale = 1, width = 5, height = 5, units = c("in"),dpi = 300)
+
+tempF <- subset(dfp2, Sex %in% "F")
+tempM <- subset(dfp2, Sex %in% "M")
+
+testMethodF<-t.test(NormDist ~ Age, data = tempF)
+testMethodM<-t.test(NormDist ~ Age, data = tempM)
+
+mytTableF<-as_tibble(
+  cbind(paste("Female", testMethodF$data.name, sep=" "), testMethodF$estimate[1], testMethodF$estimate[2], testMethodF$statistic, testMethodF$p.value,  
+        testMethodF$conf.int[1], testMethodF$conf.int[2] , testMethodF$parameter, nrow(tempF))
+)
+mytTableM<-as_tibble(
+  cbind(paste("Male", testMethodM$data.name, sep=" "), testMethodM$estimate[1], testMethodM$estimate[2], testMethodM$statistic, testMethodM$p.value,  
+        testMethodM$conf.int[1], testMethodM$conf.int[2] , testMethodM$parameter, nrow(tempM))
+)
+
+mycolnames<-c('contrast', names(testMethodF$estimate)[1], names(testMethodF$estimate)[2], names(testMethodF$statistic), 'pvalue', 'CIlwr', 'CIhi', 'df', 'observations')
+
+myfile<-paste(outpath,'NormSWDistAPOE22Probe2Sexstats.csv')
+write.table(mytTableF, file=myfile, col.names = mycolnames , sep = "," , row.names = F,append=TRUE)
+write.table(mytTableM, file=myfile, col.names = FALSE, sep = "," , row.names = F,append=TRUE)
