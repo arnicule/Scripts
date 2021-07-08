@@ -976,7 +976,7 @@ write.table(mytTablep2, file=myfile, col.names = FALSE, sep = "," , row.names = 
 write.table(postHocTablep1, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 write.table(postHocTablep2, file=myfile, sep=",", row.names=F, append=TRUE, col.names=F)
 
-#Distance in SW for all genotypes
+#Distance in SW for all genotypes in Probes
 ggline(dfSW, x='Genotype', y='Distance', color='Genotype', fill='Genotype',
        error.plot='errorbar', add='mean_se', palette = c('blueviolet','chartreuse1','red','orange'), size=1, 
        point.size = 1.5, xlab='', ylab='Distance (m)', legend='top', facet.by='Day')
