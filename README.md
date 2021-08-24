@@ -1,1 +1,0 @@
-How to use each Stat Script:
